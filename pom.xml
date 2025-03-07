@@ -30,7 +30,7 @@
 		<java.version>17</java.version>
 		<maven.compiler.target>1.8</maven.compiler.target>
   		<maven.compiler.source>1.8</maven.compiler.source>
-		<sonar.projectKey>booking</sonar.projectKey>
+		<sonar.projectKey>proyecto-grupo</sonar.projectKey>
 		<sonar.branch.name>main</sonar.branch.name>
 		<sonar.projectName>booking</sonar.projectName> 
 		<sonar.host.url>http://localhost:9000</sonar.host.url>
