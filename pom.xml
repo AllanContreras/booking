@@ -28,15 +28,18 @@
 	</scm>
 	<properties>
 		<java.version>17</java.version>
-		<maven.compiler.target>1.8</maven.compiler.target>
-  		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>17</maven.compiler.target>
+		<maven.compiler.source>17</maven.compiler.source>
+
+		<!-- Configuración para SonarCloud -->
 		<sonar.projectKey>Allancontreras_booking</sonar.projectKey>
 		<sonar.projectName>booking</sonar.projectName>
 		<sonar.organization>allancontreras</sonar.organization>
-                <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
+
+		<!-- Configuración de cobertura -->
 		<sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
-		<sonar.coverage.exclusions>src//configurators/*</sonar.coverage.exclusions>
-		<sonar.login>squ_5bcf2d688910a75160f8e607672adbf0ada0b594</sonar.login>
+		<sonar.coverage.exclusions>src/configurators/*</sonar.coverage.exclusions>
 	</properties>
 	<dependencies>
 		<dependency>
