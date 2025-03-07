@@ -31,11 +31,11 @@
 		<maven.compiler.target>1.8</maven.compiler.target>
   		<maven.compiler.source>1.8</maven.compiler.source>
 		<sonar.projectKey>booking</sonar.projectKey>
-		<sonar.projectName>booking</sonar.projectName> 
-		<sonar.host.url>http://localhost:9000</sonar.host.url>
 		<sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
 		<sonar.coverage.exclusions>src//configurators/*</sonar.coverage.exclusions>
-		<sonar.login>squ_5bcf2d688910a75160f8e607672adbf0ada0b594</sonar.login>
+                <sonar.projectName>proyecto-grupo</sonar.projectName>
+		<sonar.projectKey>allancontreras-r_proyecto-grupo</sonar.projectKey>  
+                <sonar.host.url>https://sonarcloud.io</sonar.host.url>
 	</properties>
 	<dependencies>
 		<dependency>
