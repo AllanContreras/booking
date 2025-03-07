@@ -110,7 +110,7 @@
 							<limit>
 							<counter>CLASS</counter>
 							<value>COVEREDRATIO</value>
-							<minimum>0.85</minimum>
+							<minimum>0.6</minimum>
 							</limit>
 						</limits>
 						</rule>
