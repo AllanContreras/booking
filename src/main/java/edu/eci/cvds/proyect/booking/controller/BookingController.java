@@ -1,68 +1,103 @@
 package edu.eci.cvds.proyect.booking.controller;
 
-import edu.eci.cvds.proyect.booking.documents.Bookings;
-import edu.eci.cvds.proyect.booking.repository.BookingRepository;
+import edu.eci.cvds.proyect.booking.dto.BookingDto;
+import edu.eci.cvds.proyect.booking.entity.Booking;
+import edu.eci.cvds.proyect.booking.service.BookingService;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/Bookings")
+@RequestMapping("/Booking")
 public class BookingController {
-    @Autowired
-    private BookingRepository bookingRepository;
+    
+    private BookingService bookingService;
+    private static final String ERROR_KEY = "Error";
+    private static final String MESSAGE_KEY = "Message";
+    private static final Logger logger = LoggerFactory.getLogger(BookingController.class);
 
-    @PostMapping
-    public ResponseEntity<?> saveBooking(@RequestBody Bookings booking) {
-        try {
-            Bookings bookingSave = bookingRepository.save(booking);
-            return new ResponseEntity<>(bookingSave, HttpStatus.CREATED);
-        } catch (Exception e) {
-            String errorMessage = (e.getCause() != null) ? e.getCause().toString() : e.getMessage();
-            return new ResponseEntity<>("Error al guardar la reserva: " + errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+    @Autowired
+    public BookingController(BookingService bookingService) {
+        this.bookingService = bookingService;
     }
 
     @GetMapping
-    public ResponseEntity<?> findAllBookings() {
+    public ResponseEntity<List<Booking>> getAll() {
         try {
-            List<Bookings> bookings = bookingRepository.findAll();
-            return new ResponseEntity<>(bookings, HttpStatus.OK);
+            return new ResponseEntity<>(bookingService.getAll(), HttpStatus.OK);
         } catch (Exception e) {
             String errorMessage = (e.getCause() != null) ? e.getCause().toString() : e.getMessage();
-            return new ResponseEntity<>("Error al obtener las reservas: " + errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
+            logger.error("Error al obtener las reservas: {}", errorMessage, e);
+            return new ResponseEntity<>(Collections.emptyList(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        
+    }
+    @GetMapping("/{id}")
+    public ResponseEntity<Object> getOne(@PathVariable("id") Integer id) {
+        try {
+            return new ResponseEntity<>(bookingService.getOne(id), HttpStatus.OK);
+        } catch (Exception e) {
+            String errorMessage = "Error al obtener la reserva con ID " + id;
+            logger.error("{}: {}", errorMessage, e.getMessage(), e);
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put(ERROR_KEY, errorMessage);
+            errorResponse.put("details", e.getMessage());
+            return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+        }       
+    }
+
+
+    @PostMapping 
+    public ResponseEntity<Object> save(@RequestBody BookingDto bookingDto) {
+        try {
+            Booking savedBooking = bookingService.save(bookingDto);
+            return new ResponseEntity<>(savedBooking, HttpStatus.CREATED);
+        } catch (Exception e) {
+            String errorMessage = (e.getCause() != null) ? e.getCause().toString() : e.getMessage();
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put(ERROR_KEY, "Error al guardar la reserva");
+            errorResponse.put(MESSAGE_KEY, errorMessage);
+            return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    @PutMapping
-    public ResponseEntity<?> updateBooking(@RequestBody Bookings booking) {
+    @PutMapping("/{id}")
+    public ResponseEntity<Object> update(@PathVariable("id") Integer id, @RequestBody BookingDto bookingDto) {
         try {
-            if (!bookingRepository.existsById(booking.getId())) {
-                return new ResponseEntity<>("Reserva no encontrada", HttpStatus.NOT_FOUND);
-            }
-            Bookings bookingSave = bookingRepository.save(booking);
-            return new ResponseEntity<>(bookingSave, HttpStatus.OK);
+            return new ResponseEntity<>(bookingService.update(id, bookingDto), HttpStatus.OK);
         } catch (Exception e) {
             String errorMessage = (e.getCause() != null) ? e.getCause().toString() : e.getMessage();
-            return new ResponseEntity<>("Error al actualizar la reserva: " + errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
+            logger.error("Error al actualizar reserva con ID {}: {}", id, errorMessage, e);
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put(ERROR_KEY, "Error al actualizar la reserva");
+            errorResponse.put(MESSAGE_KEY, errorMessage);
+            return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
         }
+        
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteBooking(@PathVariable Integer id) {
+    public ResponseEntity<Object> delete(@PathVariable("id") Integer id) {
         try {
-            if (!bookingRepository.existsById(id)) {
-                return new ResponseEntity<>("Reserva no encontrada", HttpStatus.NOT_FOUND);
-            }
-            bookingRepository.deleteById(id);
-            return new ResponseEntity<>("Reserva eliminada", HttpStatus.OK);
+            bookingService.delete(id);
+            return new ResponseEntity<>(Collections.singletonMap("message", "Reserva eliminado correctamente"), HttpStatus.OK);
         } catch (Exception e) {
             String errorMessage = (e.getCause() != null) ? e.getCause().toString() : e.getMessage();
-            return new ResponseEntity<>("Error al eliminar la reserva: " + errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
+            logger.error("Error al eliminar reserva con ID {}: {}", id, errorMessage, e);
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put(ERROR_KEY, "Error al eliminar la reserva");
+            errorResponse.put(MESSAGE_KEY, errorMessage);
+            return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
         }
+                    
     }
 }

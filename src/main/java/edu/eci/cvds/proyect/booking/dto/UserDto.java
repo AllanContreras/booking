@@ -1,13 +1,8 @@
-package edu.eci.cvds.proyect.booking.documents;
+package edu.eci.cvds.proyect.booking.dto;
 
-import javax.persistence.Id;
+import edu.eci.cvds.proyect.booking.entity.UserRole;
 
-import org.springframework.data.mongodb.core.mapping.Document;
-
-@Document(collection = "Users")
-public class Users {
-    @Id
-    private Integer id;
+public class UserDto {
 
     private String name;
 
@@ -17,21 +12,11 @@ public class Users {
 
     private String password;
 
-    public Users(Integer id, String name, String email, UserRole role, String password) {
-        super();
-        this.id = id;
+    public UserDto(String name, String email, UserRole role, String password) {
         this.name = name;
         this.email = email;
         this.role = role;
         this.password = password;
-    }
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 
     public String getName() {
@@ -65,5 +50,4 @@ public class Users {
     public void setPassword(String password) {
         this.password = password;
     }
-
 }

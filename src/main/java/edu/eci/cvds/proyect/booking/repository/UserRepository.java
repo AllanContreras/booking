@@ -1,8 +1,10 @@
 package edu.eci.cvds.proyect.booking.repository;
-
-import edu.eci.cvds.proyect.booking.documents.Users;
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.stereotype.Repository;
 
-public interface UserRepository extends MongoRepository<Users, Integer> {
+import edu.eci.cvds.proyect.booking.entity.User;
+
+@Repository
+public interface UserRepository extends MongoRepository<User, Integer> {
 
 }

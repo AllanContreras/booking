@@ -1,11 +1,13 @@
-package edu.eci.cvds.proyect.booking.documents;
+package edu.eci.cvds.proyect.booking.entity;
+
+import java.time.LocalDateTime;
 
 import javax.persistence.Id;
+
 import org.springframework.data.mongodb.core.mapping.Document;
-import java.util.Date;
 
 @Document(collection = "Bookings")
-public class Bookings {
+public class Booking {
     @Id
     private Integer id;
 
@@ -13,13 +15,13 @@ public class Bookings {
 
     private String resource;
 
-    private Date startDate;
+    private LocalDateTime startDate;
 
-    private Date endDate;
+    private LocalDateTime endDate;
 
-    private String status;
+    private BookingStatus status;
 
-    public Bookings(Integer id, String userId, String resource, Date startDate, Date endDate, String status) {
+    public Booking(Integer id, String userId, String resource, LocalDateTime startDate, LocalDateTime endDate, BookingStatus status) {
         super();
         this.id = id;
         this.userId = userId;
@@ -33,7 +35,7 @@ public class Bookings {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Integer id){
         this.id = id;
     }
 
@@ -53,27 +55,27 @@ public class Bookings {
         this.resource = resource;
     }
 
-    public Date getStartDate() {
+    public LocalDateTime getStartDate() {
         return startDate;
     }
 
-    public void setStartDate(Date startDate) {
+    public void setStartDate(LocalDateTime startDate) {
         this.startDate = startDate;
     }
 
-    public Date getEndDate() {
+    public LocalDateTime getEndDate() {
         return endDate;
     }
 
-    public void setEndDate(Date endDate) {
+    public void setEndDate(LocalDateTime endDate) {
         this.endDate = endDate;
     }
 
-    public String getStatus() {
+    public BookingStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(BookingStatus status) {
         this.status = status;
     }
 }
