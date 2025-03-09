@@ -1,21 +1,21 @@
-package edu.eci.cvds.proyect.booking;
-import edu.eci.cvds.proyect.booking.documents.UserRole;
-import edu.eci.cvds.proyect.booking.documents.Users;
+package edu.eci.cvds.proyect.booking.persistency.entity;
+import edu.eci.cvds.proyect.booking.persistency.entity.User;
+
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
-public class UsersTest {
+public class UserTest {
     @Test
     public void getIdTest() {
-        Users user = new Users(1, "Andres silva", "AndresSilva@gmail.com", UserRole.TEACHER, "123456");
+        User user = new Users(1, "Andres silva", "AndresSilva@gmail.com", UserRole.TEACHER, "123456");
         assertEquals(1, user.getId());
     }
 
     @Test
     public void getNameTest() {
-        Users user = new Users(1, "Andres silva", "AndresSilva@gmail.com", UserRole.TEACHER, "123456");
+        User user = new Users(1, "Andres silva", "AndresSilva@gmail.com", UserRole.TEACHER, "123456");
         assertEquals("Andres silva", user.getName());
     }
 

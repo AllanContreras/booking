@@ -123,7 +123,7 @@ class UserControllerTest {
         // Ejecutar la solicitud DELETE a través de MockMvc
         mockMvc.perform(delete("/User/" + userId))
                 .andExpect(status().isOk()) // Esperamos que retorne HTTP 200 OK
-                .andExpect(jsonPath("$.Message").value("Usuario eliminado correctamente")); // Verificar el mensaje de éxito
+                .andExpect(jsonPath("$.message").value("Usuario eliminado correctamente")); // Verificar el mensaje de éxito
 
         // Verificar que el servicio fue llamado exactamente una vez
         Mockito.verify(userService, Mockito.times(1)).delete(userId);
