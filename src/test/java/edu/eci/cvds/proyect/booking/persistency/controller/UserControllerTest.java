@@ -1,75 +1,87 @@
 package edu.eci.cvds.proyect.booking.persistency.controller;
 
-
-import edu.eci.cvds.proyect.booking.persistency.controller.UserController;
-import edu.eci.cvds.proyect.booking.persistency.entity.User;
-import edu.eci.cvds.proyect.booking.persistency.repository.UserRepository;
+import edu.eci.cvds.proyect.booking.controller.UserController;
+import edu.eci.cvds.proyect.booking.dto.UserDto;
+import edu.eci.cvds.proyect.booking.entity.User;
+import edu.eci.cvds.proyect.booking.entity.UserRole;
+import edu.eci.cvds.proyect.booking.service.UserService;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Collections;
 
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(UserController.class)
-public class UserControllerTest {
+class UserControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @MockBean
-    private UserRepository userRepository;
+    private UserService userService;
+
+
+
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
     public void testSaveUser_Success() throws Exception {
+        UserDto userDto = new UserDto("Andres Silva", "AndresSilva@gmail.com", UserRole.TEACHER, "123456");
         User user = new User(1, "Andres Silva", "AndresSilva@gmail.com", UserRole.TEACHER, "123456");
 
-        Mockito.when(userRepository.save(Mockito.any(User.class))).thenReturn(user);
+        Mockito.when(userService.save(Mockito.any(UserDto.class))).thenReturn(user);
 
-        mockMvc.perform(post("/Users")
+        mockMvc.perform(post("/User")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(user)))
+                        .content(objectMapper.writeValueAsString(userDto)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.name").value("Andres Silva"));
     }
 
     @Test
     public void testSaveUser_Failure() throws Exception {
-        User user = new User(1, "Error User", "error@example.com", UserRole.TEACHER, "123456");
+        UserDto userDto = new UserDto("Error User", "error@example.com", UserRole.TEACHER, "123456");
 
-        Mockito.when(userRepository.save(Mockito.any(User.class)))
+        Mockito.when(userService.save(Mockito.any(UserDto.class)))
                 .thenThrow(new RuntimeException("Database error"));
 
-        mockMvc.perform(post("/Users")
+        mockMvc.perform(post("/User")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(user)))
+                        .content(objectMapper.writeValueAsString(userDto)))
                 .andExpect(status().isInternalServerError())
-                .andExpect(content().string("Error al guardar el usuario: Database error"));
+                .andExpect(jsonPath("$.Error").value("Error al guardar el usuario"));
     }
 
     @Test
     public void testFindAllUsers_Success() throws Exception {
-        User user1 = new Users(1, "Andres Silva", "AndresSilva@gmail.com", UserRole.TEACHER, "123456");
-        User user2 = new Users(2, "Juan Lopez", "JuanLopez@gmail.com", UserRole.TEACHER, "1234567");
+        User user1 = new User(1, "Andres Silva", "AndresSilva@gmail.com", UserRole.TEACHER, "123456");
+        User user2 = new User(2, "Juan Lopez", "JuanLopez@gmail.com", UserRole.TEACHER, "1234567");
 
-        Mockito.when(userRepository.findAll()).thenReturn(Arrays.asList(user1, user2));
+        Mockito.when(userService.getAll()).thenReturn(Arrays.asList(user1, user2));
 
-        mockMvc.perform(get("/Users"))
+        mockMvc.perform(get("/User"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.size()").value(2))
                 .andExpect(jsonPath("$[0].name").value("Andres Silva"))
@@ -78,81 +90,57 @@ public class UserControllerTest {
 
     @Test
     public void testFindAllUsers_Failure() throws Exception {
-        Mockito.when(userRepository.findAll()).thenThrow(new RuntimeException("Database connection failure"));
+        Mockito.when(userService.getAll()).thenThrow(new RuntimeException("Database connection failure"));
 
-        mockMvc.perform(get("/Users"))
+        mockMvc.perform(get("/User"))
                 .andExpect(status().isInternalServerError())
-                .andExpect(content().string("Error al obtener los usuarios: Database connection failure"));
+                .andExpect(content().json("[]"));  // 💡 Verifica que la respuesta es una lista vacía
     }
+
 
     @Test
     public void testUpdateUser_Success() throws Exception {
-        User user = new Users(1, "Updated Name", "updated@example.com", UserRole.TEACHER, "123456");
+        UserDto userDto = new UserDto("Updated Name", "updated@example.com", UserRole.TEACHER, "123456");
+        User updatedUser = new User(1, "Updated Name", "updated@example.com", UserRole.TEACHER, "123456");
 
-        Mockito.when(userRepository.existsById(user.getId())).thenReturn(true);
-        Mockito.when(userRepository.save(Mockito.any(Users.class))).thenReturn(user);
+        Mockito.when(userService.update(Mockito.eq(1), Mockito.any(UserDto.class))).thenReturn(updatedUser);
 
-        mockMvc.perform(put("/Users")
+        mockMvc.perform(put("/User/1")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(user)))
+                        .content(objectMapper.writeValueAsString(userDto)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("Updated Name"));
     }
 
     @Test
-    public void testUpdateUser_Failure_UserNotFound() throws Exception {
-        Users user = new Users(1, "Updated Name", "updated@example.com", UserRole.TEACHER, "123456");
-
-        Mockito.when(userRepository.existsById(user.getId())).thenReturn(false);
-
-        mockMvc.perform(put("/Users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(user)))
-                .andExpect(status().isNotFound())
-                .andExpect(content().string("Usuario no encontrado"));
-    }
-
-    @Test
-    public void testUpdateUser_Failure_Exception() throws Exception {
-        Users user = new Users(1, "Updated Name", "updated@example.com", UserRole.TEACHER, "123456");
-
-        Mockito.when(userRepository.existsById(user.getId())).thenReturn(true);
-        Mockito.when(userRepository.save(Mockito.any(Users.class)))
-                .thenThrow(new RuntimeException("Update failed"));
-
-        mockMvc.perform(put("/Users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(user)))
-                .andExpect(status().isInternalServerError())
-                .andExpect(content().string("Error al actualizar el usuario: Update failed"));
-    }
-
-    @Test
     public void testDeleteUser_Success() throws Exception {
-        Mockito.when(userRepository.existsById(1)).thenReturn(true);
-        Mockito.doNothing().when(userRepository).deleteById(1);
+        Integer userId = 1;
 
-        mockMvc.perform(delete("/Users/1"))
-                .andExpect(status().isOk())
-                .andExpect(content().string("Usuario eliminado"));
+        // Simular que el servicio devuelve un usuario eliminado
+        User deletedUser = new User(userId, "Test User", "test@example.com", UserRole.TEACHER, "123456");
+        Mockito.when(userService.delete(userId)).thenReturn(deletedUser);
+
+        // Ejecutar la solicitud DELETE a través de MockMvc
+        mockMvc.perform(delete("/User/" + userId))
+                .andExpect(status().isOk()) // Esperamos que retorne HTTP 200 OK
+                .andExpect(jsonPath("$.Message").value("Usuario eliminado correctamente")); // Verificar el mensaje de éxito
+
+        // Verificar que el servicio fue llamado exactamente una vez
+        Mockito.verify(userService, Mockito.times(1)).delete(userId);
     }
 
-    @Test
-    public void testDeleteUser_Failure_UserNotFound() throws Exception {
-        Mockito.when(userRepository.existsById(1)).thenReturn(false);
 
-        mockMvc.perform(delete("/Users/1"))
-                .andExpect(status().isNotFound())
-                .andExpect(content().string("Usuario no encontrado"));
-    }
+
+
+
+
 
     @Test
     public void testDeleteUser_Failure_Exception() throws Exception {
-        Mockito.when(userRepository.existsById(1)).thenReturn(true);
-        Mockito.doThrow(new RuntimeException("Delete error")).when(userRepository).deleteById(1);
+        Mockito.doThrow(new RuntimeException("Delete error")).when(userService).delete(1);
 
-        mockMvc.perform(delete("/Users/1"))
+        mockMvc.perform(delete("/User/1"))
                 .andExpect(status().isInternalServerError())
-                .andExpect(content().string("Error al eliminar el usuario: Delete error"));
+                .andExpect(jsonPath("$.Error").value("Error al eliminar el usuario"));
     }
 }

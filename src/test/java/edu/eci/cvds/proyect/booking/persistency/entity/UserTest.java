@@ -1,71 +1,73 @@
-package edu.eci.cvds.proyect.booking.persistency.entity;
-import edu.eci.cvds.proyect.booking.persistency.entity.User;
+package edu.eci.cvds.proyect.booking.entity;
 
+
+import edu.eci.cvds.proyect.booking.entity.User;
+import edu.eci.cvds.proyect.booking.entity.UserRole;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-
 public class UserTest {
     @Test
-    public void getIdTest() {
-        User user = new Users(1, "Andres silva", "AndresSilva@gmail.com", UserRole.TEACHER, "123456");
-        assertEquals(1, user.getId());
+
+    void getIdTest(){
+        User user =new User(123,"Andres Silva","AndresSilva@gmail.com", UserRole.TEACHER,"123456");
+        assertEquals(123,user.getId());
     }
 
     @Test
-    public void getNameTest() {
-        User user = new Users(1, "Andres silva", "AndresSilva@gmail.com", UserRole.TEACHER, "123456");
-        assertEquals("Andres silva", user.getName());
+
+    void getNameTest(){
+        User user =new User(123,"Andres Silva","AndresSilva@gmail.com", UserRole.TEACHER,"123456");
+        assertEquals("Andres Silva",user.getName());
     }
 
     @Test
-    public void getEmailTest() {
-        Users user = new Users(1, "Andres silva", "AndresSilva@gmail.com", UserRole.TEACHER, "123456");
-        assertEquals("AndresSilva@gmail.com", user.getEmail());
+    void getEmailTest(){
+        User user =new User(123,"Andres Silva","AndresSilva@gmail.com", UserRole.TEACHER,"123456");
+        assertEquals("AndresSilva@gmail.com",user.getEmail());
+    }
+    @Test
+    void getRoleTest(){
+        User user =new User(123,"Andres Silva","AndresSilva@gmail.com", UserRole.TEACHER,"123456");
+        assertEquals(UserRole.TEACHER,user.getRole());
     }
 
     @Test
-    public void getRoleTest() {
-        Users user = new Users(1, "Andres silva", "AndresSilva@gmail.com", UserRole.TEACHER, "123456");
-        assertEquals(UserRole.TEACHER, user.getRole());
+    void getPasswordTest(){
+        User user =new User(123,"Andres Silva","AndresSilva@gmail.com", UserRole.TEACHER,"123456");
+        assertEquals("123456",user.getPassword());
     }
+    @Test
+    void setIdTest(){
+        User user =new User(456,"Samuel Ortega","SamuelOrtega@gmail.com", UserRole.ADMIN,"123456");
+        user.setId(999);
+        assertEquals(999,user.getId());
+    }
+    @Test
 
-    @Test
-    public void getPasswordTest() {
-        Users user = new Users(1, "Andres silva", "AndresSilva@gmail.com", UserRole.TEACHER, "123456");
-        assertEquals("123456", user.getPassword());
-    }
+    void setPasswordTest(){
+        User user =new User(456,"Samuel Ortega","SamuelOrtega@gmail.com", UserRole.ADMIN,"123456");
+        user.setPassword("999999");
+        assertEquals("999999",user.getPassword());
 
-    @Test
-    public void setIdTest() {
-        Users user = new Users(1, "Andres silva", "AndresSilva@gmail.com", UserRole.TEACHER, "123456");
-        user.setId(2);
-        assertEquals(2, user.getId());
     }
     @Test
-    public void setNameTest() {
-        Users user = new Users(1, "Andres silva", "AndresSilva@gmail.com", UserRole.TEACHER, "123456");
-        user.setName("Updated Name");
-        assertEquals("Updated Name", user.getName());
+    void setEmailTest(){
+        User user =new User(456,"Samuel Ortega","SamuelOrtega@gmail.com", UserRole.ADMIN,"123456");
+        user.setEmail("SamuelOrtega@hotmail.com");
+        assertEquals("SamuelOrtega@hotmail.com",user.getEmail());
     }
     @Test
-    public void setEmailTest() {
-        Users user = new Users(1, "Andres silva", "AndresSilva@gmail.com", UserRole.TEACHER, "123456");
-        user.setEmail("Updated Email");
-        assertEquals("Updated Email", user.getEmail());
+    void setNameTest(){
+        User user =new User(456,"Samuel Ortega","SamuelOrtega@gmail.com", UserRole.ADMIN,"123456");
+        user.setName("Ivan Torres");
+        assertEquals("Ivan Torres",user.getName());
     }
     @Test
-    public void setRoleTest() {
-        Users user = new Users(1, "Andres silva", "AndresSilva@gmail.com", UserRole.TEACHER, "123456");
-        user.setRole(UserRole.ADMIN);
-        assertEquals(UserRole.ADMIN, user.getRole());
+    void setRoleTest(){
+        User user =new User(456,"Samuel Ortega","SamuelOrtega@gmail.com", UserRole.ADMIN,"123456");
+        user.setRole(UserRole.TEACHER);
+        assertEquals(UserRole.TEACHER,user.getRole());
     }
-    @Test
-    public void setPasswordTest() {
-        Users user = new Users(1, "Andres silva", "AndresSilva@gmail.com", UserRole.TEACHER, "123456");
-        user.setPassword("Updated Password");
-        assertEquals("Updated Password", user.getPassword());
-    }
-
 }

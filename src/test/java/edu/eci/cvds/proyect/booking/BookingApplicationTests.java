@@ -1,14 +1,12 @@
 package edu.eci.cvds.proyect.booking;
 
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
-
-import edu.eci.cvds.proyect.booking.BookingApplication;
-
 import org.junit.jupiter.api.Test;
-
-@SpringBootTest(classes = BookingApplication.class)
-
+@ContextConfiguration(classes = BookingApplication.class)
+@SpringBootTest
+@EnableAutoConfiguration
 class BookingApplicationTests {
 
 	@Test
