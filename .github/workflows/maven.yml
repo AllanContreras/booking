@@ -1,4 +1,4 @@
-este es el yml: name: SonarQube
+ name: SonarQube
 on:
   push:
     branches:
