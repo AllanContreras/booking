@@ -33,8 +33,11 @@ public class BookingService {
     
 
     public Booking save(BookingDto bookingDto){
+        if (bookingDto == null) {
+            throw new RuntimeException("La reserva no puede ser nula");
+        }
         Integer id = autoIncrement();
-        Booking booking = new Booking(id, bookingDto.getUserId(), bookingDto.getResource(), bookingDto.getDay(),bookingDto.getStartHour(),bookingDto.getEndHour(),bookingDto.getStatus());
+        Booking booking = new Booking(id, bookingDto.getUserId(), bookingDto.getLaboratoryName(), bookingDto.getDay(),bookingDto.getStartHour(),bookingDto.getEndHour(),bookingDto.getStatus());
         return bookingRepository.save(booking);
     }
 
@@ -42,9 +45,10 @@ public class BookingService {
         if (id == null) {
             throw new IllegalArgumentException(BOOKING_ID_NULL);
         }
+        
         Booking booking = bookingRepository.findById(id).orElseThrow(() -> new RuntimeException(BOOKING_ID_NOT_FOUND + id));
         booking.setUserId(bookingDto.getUserId());
-        booking.setResource(bookingDto.getResource());
+        booking.setLaboratoryName(bookingDto.getLaboratoryName());
         booking.setDay(bookingDto.getDay());
         booking.setStartHour(bookingDto.getStartHour());
         booking.setEndHour(bookingDto.getEndHour());

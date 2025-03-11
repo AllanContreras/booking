@@ -89,7 +89,7 @@ public class BookingController {
     public ResponseEntity<Object> delete(@PathVariable("id") Integer id) {
         try {
             bookingService.delete(id);
-            return new ResponseEntity<>(Collections.singletonMap("message", "Reserva eliminado correctamente"), HttpStatus.OK);
+            return new ResponseEntity<>(Collections.singletonMap("message", "Reserva eliminada correctamente"), HttpStatus.OK);
         } catch (Exception e) {
             String errorMessage = (e.getCause() != null) ? e.getCause().toString() : e.getMessage();
             logger.error("Error al eliminar reserva con ID {}: {}", id, errorMessage, e);

@@ -1,15 +1,15 @@
 package edu.eci.cvds.proyect.booking.persistency.dto;
 
-import org.springframework.data.mongodb.core.aggregation.DateOperators.Hour;
-
+import edu.eci.cvds.proyect.booking.shedules.Hour;
 import edu.eci.cvds.proyect.booking.bookings.BookingStatus;
+import edu.eci.cvds.proyect.booking.laboratorys.LaboratoryName;
 import edu.eci.cvds.proyect.booking.shedules.Day;
 
 
 public class BookingDto {
     private Integer userId;
 
-    private String resource;
+    private LaboratoryName laboratoryName;
 
     private Day day;
 
@@ -19,9 +19,10 @@ public class BookingDto {
 
     private BookingStatus status;
 
-    public BookingDto(Integer userId, String resource, Day day, Hour startHour, Hour endHour, BookingStatus status) {
+    public BookingDto(Integer userId, LaboratoryName laboratoryName, Day day, Hour startHour, Hour endHour,
+            BookingStatus status) {
         this.userId = userId;
-        this.resource = resource;
+        this.laboratoryName = laboratoryName;
         this.day = day;
         this.startHour = startHour;
         this.endHour = endHour;
@@ -36,12 +37,12 @@ public class BookingDto {
         this.userId = userId;
     }
 
-    public String getResource() {
-        return resource;
+    public LaboratoryName getLaboratoryName() {
+        return laboratoryName;
     }
 
-    public void setResource(String resource) {
-        this.resource = resource;
+    public void setLaboratoryName(LaboratoryName laboratoryName) {
+        this.laboratoryName = laboratoryName;
     }
 
     public Day getDay() {
@@ -76,4 +77,5 @@ public class BookingDto {
         this.status = status;
     }
 
+    
 }

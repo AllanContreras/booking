@@ -14,7 +14,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private static final String USER_ID_NULL = "El ID del usuario no puede ser null";
-    private static final String USER_ID_NOT_FOUND = "Uuario no encontrado con ID: ";
+    private static final String USER_ID_NOT_FOUND = "Usuario no encontrado con ID: ";
 
     public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
@@ -31,6 +31,9 @@ public class UserService {
     }
 
     public User save(UserDto userDto){
+        if (userDto == null) {
+            throw new RuntimeException("El usuario no puede ser nulo");
+        }
         Integer id = autoIncrement();
         User user = new User(id, userDto.getName(), userDto.getEmail(), userDto.getRole(), userDto.getPassword());
         return userRepository.save(user);

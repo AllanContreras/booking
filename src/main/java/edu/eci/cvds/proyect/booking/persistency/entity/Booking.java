@@ -1,11 +1,12 @@
 package edu.eci.cvds.proyect.booking.persistency.entity;
 
 import javax.persistence.Id;
+import edu.eci.cvds.proyect.booking.shedules.Hour;
 
-import org.springframework.data.mongodb.core.aggregation.DateOperators.Hour;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import edu.eci.cvds.proyect.booking.bookings.BookingStatus;
+import edu.eci.cvds.proyect.booking.laboratorys.LaboratoryName;
 import edu.eci.cvds.proyect.booking.shedules.Day;
 
 @Document(collection = "Bookings")
@@ -15,7 +16,7 @@ public class Booking {
 
     private Integer userId;
 
-    private String resource;
+    private LaboratoryName laboratoryName;
 
     private Day day;
 
@@ -25,16 +26,19 @@ public class Booking {
 
     private BookingStatus status;
 
-    public Booking(Integer id, Integer userId, String resource, Day day, Hour startHour, Hour endHour,
+    
+
+    public Booking(Integer id, Integer userId, LaboratoryName laboratoryName, Day day, Hour startHour, Hour endHour,
             BookingStatus status) {
         this.id = id;
         this.userId = userId;
-        this.resource = resource;
+        this.laboratoryName = laboratoryName;
         this.day = day;
         this.startHour = startHour;
         this.endHour = endHour;
         this.status = status;
     }
+
 
     public Integer getId() {
         return id;
@@ -52,12 +56,12 @@ public class Booking {
         this.userId = userId;
     }
 
-    public String getResource() {
-        return resource;
+    public LaboratoryName getLaboratoryName() {
+        return laboratoryName;
     }
 
-    public void setResource(String resource) {
-        this.resource = resource;
+    public void setLaboratoryName(LaboratoryName laboratoryName) {
+        this.laboratoryName = laboratoryName;
     }
 
     public Day getDay() {
@@ -91,7 +95,6 @@ public class Booking {
     public void setStatus(BookingStatus status) {
         this.status = status;
     }
-
     
 }
 
