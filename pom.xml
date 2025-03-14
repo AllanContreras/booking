@@ -68,7 +68,12 @@
 			<artifactId>hibernate-core</artifactId>
 			<version>5.4.4.Final</version>
 		</dependency>
- </dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
 	<build>
 		<plugins>
@@ -106,20 +111,26 @@
 				<goals>
 					<goal>check</goal>
 				</goals>
-				<configuration>
-					<rules>
-					<rule>
-						<element>PACKAGE</element>
-						<limits>
-							<limit>
-							<counter>CLASS</counter>
-							<value>COVEREDRATIO</value>
-							<minimum>0.6</minimum>
-							</limit>
-						</limits>
-						</rule>
-					</rules>
+					<configuration>
+						<rules>
+							<rule>
+								<element>BUNDLE</element>
+								<limits>
+									<limit>
+										<counter>CLASS</counter>
+										<value>COVEREDRATIO</value>
+										<minimum>0.8</minimum>
+									</limit>
+									<limit>
+										<counter>BRANCH</counter>
+										<value>COVEREDRATIO</value>
+										<minimum>0.6</minimum>
+									</limit>
+								</limits>
+							</rule>
+						</rules>
 					</configuration>
+
 				</execution>
 				</executions>
 			</plugin>
