@@ -3,6 +3,7 @@ package edu.eci.cvds.proyect.booking.persistency.service;
 import java.util.Comparator;
 import java.util.List;
 
+import edu.eci.cvds.proyect.booking.exceptions.UserException;
 import org.springframework.stereotype.Service;
 
 import edu.eci.cvds.proyect.booking.persistency.dto.UserDto;
@@ -67,4 +68,28 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("No se pudo determinar el siguiente ID"))
                 .getId() + 1;    
     }
+    public User loginUser(String name, String password) throws UserException {
+
+        User user = this.userRepository.findByName(name);
+
+        if (user == null) {
+
+            throw new UserException.UserNotFoundException(name);
+
+        }
+
+        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
+        if (passwordEncoder.matches(password, user.getPassword())) {
+
+            return user;
+
+        } else {
+
+            throw new UserException.UserInvalidValueException("Invalid credentials");
+
+        }
+
+    }
+
 }
