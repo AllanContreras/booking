@@ -1,18 +1,20 @@
 package edu.eci.cvds.proyect.booking.exceptions;
 
-public class BookingException  extends AppException{
-    
+public class BookingException extends AppException {
+
     public BookingException(String message, Integer statusCode) {
         super(message, statusCode);
     }
 
     /**
-     * BookingNotFoundException is thrown when a task cannot be found in the database.
+     * BookingNotFoundException is thrown when a task cannot be found in the
+     * database.
      */
     public static class BookingNotFoundException extends BookingException {
 
         /**
          * Constructor for BookingNotFoundException.
+         * 
          * @param Booking The Booking that was not found.
          */
         public BookingNotFoundException(String task) {
@@ -27,6 +29,7 @@ public class BookingException  extends AppException{
 
         /**
          * Constructor for BookingInvalidValueException.
+         * 
          * @param value The invalid value encountered.
          */
         public BookingInvalidValueException(String value) {
@@ -35,12 +38,14 @@ public class BookingException  extends AppException{
     }
 
     /**
-     * BookingConflictException is thrown when there is a conflict, such as a duplicate Booking.
+     * BookingConflictException is thrown when there is a conflict, such as a
+     * duplicate Booking.
      */
     public static class BookingConflictException extends BookingException {
 
         /**
          * Constructor for BookingConflictException.
+         * 
          * @param booking The Booking that caused the conflict.
          */
         public BookingConflictException(String booking) {

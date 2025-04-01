@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.UUID;
 
-
 @Service
 public class SessionService implements SessionsService {
     private static final int COOKIE_MAX_AGE_MIN = 1800;
@@ -41,12 +40,12 @@ public class SessionService implements SessionsService {
 
         return sessionId;
 
-//        // Create cookie in the Backend
-//        return ResponseCookie.from("SESSION_ID", sessionId)
-//                .maxAge(COOKIE_MAX_AGE)
-//                .path("/")
-//                .httpOnly(true)
-//                .build();
+        // // Create cookie in the Backend
+        // return ResponseCookie.from("SESSION_ID", sessionId)
+        // .maxAge(COOKIE_MAX_AGE)
+        // .path("/")
+        // .httpOnly(true)
+        // .build();
     }
 
     public boolean renewSession(String sessionId) throws SessionException {
@@ -74,10 +73,9 @@ public class SessionService implements SessionsService {
         }
     }
 
-    public void cleanExpiredSessions(){
+    public void cleanExpiredSessions() {
         long currentTime = System.currentTimeMillis();
-        activeSessions.entrySet().removeIf(entry ->
-                entry.getValue().expirationTime < currentTime);
+        activeSessions.entrySet().removeIf(entry -> entry.getValue().expirationTime < currentTime);
     }
 
     private static class SessionInfo {

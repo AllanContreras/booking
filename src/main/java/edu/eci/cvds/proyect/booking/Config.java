@@ -5,7 +5,6 @@ import edu.eci.cvds.proyect.booking.persistency.service.BookingService;
 import edu.eci.cvds.proyect.booking.persistency.service.UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;

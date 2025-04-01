@@ -15,13 +15,9 @@ import java.util.Collections;
 public abstract class AppException extends Exception {
 
     private final Integer statusCode;
-
-    public AppException(String message, Integer statusCode) {
-
+    AppException(String message, Integer statusCode) {
         super(message);
-
         this.statusCode = statusCode;
-
     }
 
     /**
@@ -31,10 +27,7 @@ public abstract class AppException extends Exception {
      */
 
     public ResponseEntity<?> getResponse() {
-
         return ResponseEntity.status(statusCode).body(Collections.singletonMap("error", this.getMessage()));
-
     }
 
 }
-

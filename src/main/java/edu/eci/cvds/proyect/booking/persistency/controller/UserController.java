@@ -1,19 +1,14 @@
 package edu.eci.cvds.proyect.booking.persistency.controller;
 
-import edu.eci.cvds.proyect.booking.persistency.dto.UserDto;
+import edu.eci.cvds.proyect.booking.exceptions.UserException;
 import edu.eci.cvds.proyect.booking.persistency.entity.User;
+import edu.eci.cvds.proyect.booking.persistency.service.AuthorizationService;
 import edu.eci.cvds.proyect.booking.persistency.service.UserService;
+import edu.eci.cvds.proyect.booking.users.UserRole;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Collections;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,84 +16,91 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/User")
 public class UserController {
 
-    
+    @Autowired
     private UserService userService;
-    private static final String ERROR_KEY = "Error";
-    private static final String MESSAGE_KEY = "Message";
-    private static final Logger logger = LoggerFactory.getLogger(UserController.class);
-
 
     @Autowired
-    public UserController(UserService userService) {
-        this.userService = userService;
+    private AuthorizationService authorizationService;
+
+    @PostMapping
+    public ResponseEntity<?> createUserAsUser(@RequestBody User user, UserRole role) {
+        try {
+            final User user2 = userService.createUserAsUser(user,role);
+            return ResponseEntity.status(201).body(Collections.singletonMap("message ", "The user " + user2.getName() + " was created successfully."));
+        } catch (Exception e) {
+            if (e instanceof UserException) {
+                return ((UserException) e).getResponse();
+            }
+            return ResponseEntity.status(500).body(Collections.singletonMap("error ", "Server error "));
+        }
     }
 
-
-    @GetMapping
-    public ResponseEntity<List<User>> getAll() {
+    @PostMapping("/admin")
+    public ResponseEntity<?> createUserAsAdmin(@RequestHeader("authorization") String token, @RequestBody User user, @RequestBody String roles) {
         try {
-            return new ResponseEntity<>(userService.getAll(), HttpStatus.OK);
+            final User user2 = userService.createUserAsAdmin(user);
+            this.authorizationService.adminResource(token);
+            return ResponseEntity.status(201).body(Collections.singletonMap("message", "The user " + user2.getName() + " was created successfully."));
         } catch (Exception e) {
-            String errorMessage = (e.getCause() != null) ? e.getCause().toString() : e.getMessage();
-            logger.error("Error al obtener los usuarios: {}", errorMessage, e);
-            return new ResponseEntity<>(Collections.emptyList(), HttpStatus.INTERNAL_SERVER_ERROR);
+            if (e instanceof UserException) {
+                return ((UserException) e).getResponse();
+            }
+            return ResponseEntity.status(500).body(Collections.singletonMap("error  ", "Server error  "));
         }
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Object> getOne(@PathVariable("id") Integer id) {
+    public ResponseEntity<?> getUserById(@RequestHeader("authorization") String token, @PathVariable String id) {
         try {
-            return new ResponseEntity<>(userService.getOne(id), HttpStatus.OK);
+            this.authorizationService.adminResource(token);
+            return ResponseEntity.ok(userService.getUserById(id));
+
         } catch (Exception e) {
-            String errorMessage = "Error al obtener el usuario con ID " + id;
-            logger.error("{}: {}", errorMessage, e.getMessage(), e);
-            Map<String, String> errorResponse = new HashMap<>();
-            errorResponse.put(ERROR_KEY, errorMessage);
-            errorResponse.put("details", e.getMessage());
-            return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+            if (e instanceof UserException) {
+                return ((UserException) e).getResponse();
+            }
+            return ResponseEntity.status(500).body(Collections.singletonMap(" error", " Server error"));
         }
     }
 
-    @PostMapping 
-    public ResponseEntity<Object> save(@RequestBody UserDto userDto) {
+    @GetMapping
+    public ResponseEntity<?> getAllUsers(@RequestHeader("authorization") String token) {
         try {
-            User savedUser = userService.save(userDto);
-            return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
+            this.authorizationService.adminResource(token);
+            return ResponseEntity.ok(userService.getAllUsers());
         } catch (Exception e) {
-            String errorMessage = (e.getCause() != null) ? e.getCause().toString() : e.getMessage();
-            Map<String, String> errorResponse = new HashMap<>();
-            errorResponse.put(ERROR_KEY, "Error al guardar el usuario");
-            errorResponse.put(MESSAGE_KEY, errorMessage);
-            return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+            if (e instanceof UserException) {
+                return ((UserException) e).getResponse();
+            }
+            return ResponseEntity.status(500).body(Collections.singletonMap("error  ", "Server error  "));
         }
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Object> update(@PathVariable("id") Integer id, @RequestBody UserDto userDto) {
+    public ResponseEntity<?> updateUser(@RequestHeader("authorization") String token, @PathVariable String id, @RequestBody User user) {
         try {
-            return new ResponseEntity<>(userService.update(id, userDto), HttpStatus.OK);
+            this.authorizationService.adminResource(token);
+            return ResponseEntity.ok(userService.updateUser(id, user));
         } catch (Exception e) {
-            String errorMessage = (e.getCause() != null) ? e.getCause().toString() : e.getMessage();
-            logger.error("Error al actualizar usuario con ID {}: {}", id, errorMessage, e);
-            Map<String, String> errorResponse = new HashMap<>();
-            errorResponse.put(ERROR_KEY, "Error al actualizar el usuario");
-            errorResponse.put(MESSAGE_KEY, errorMessage);
-            return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+            if (e instanceof UserException) {
+                return ((UserException) e).getResponse();
+            }
+            return ResponseEntity.status(500).body(Collections.singletonMap("error", "Server error"));
         }
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Object> delete(@PathVariable("id") Integer id) {
+    public ResponseEntity<?> deleteUser(@RequestHeader("authorization") String token, @PathVariable String id) {
         try {
-            userService.delete(id);
-            return new ResponseEntity<>(Collections.singletonMap(MESSAGE_KEY, "Usuario eliminado correctamente"), HttpStatus.OK);
+            userService.deleteUser(id);
+            this.authorizationService.adminResource(token);
+            return ResponseEntity.ok(Collections.singletonMap("message", "User deleted successfully"));
+
         } catch (Exception e) {
-            String errorMessage = (e.getCause() != null) ? e.getCause().toString() : e.getMessage();
-            logger.error("Error al eliminar usuario con ID {}: {}", id, errorMessage, e);
-            Map<String, String> errorResponse = new HashMap<>();
-            errorResponse.put(ERROR_KEY, "Error al eliminar el usuario");
-            errorResponse.put(MESSAGE_KEY, errorMessage);
-            return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+            if (e instanceof UserException) {
+                return ((UserException) e).getResponse();
+            }
+            return ResponseEntity.status(500).body(Collections.singletonMap("error", "Server error"));
         }
     }
 }

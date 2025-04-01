@@ -6,15 +6,12 @@ import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.IntStream;
 
-import edu.eci.cvds.proyect.booking.bookings.BookingStatus;
 import edu.eci.cvds.proyect.booking.exceptions.AppException;
 import edu.eci.cvds.proyect.booking.exceptions.BookingException;
 import edu.eci.cvds.proyect.booking.laboratorys.LaboratoryName;
@@ -25,7 +22,6 @@ import edu.eci.cvds.proyect.booking.persistency.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import edu.eci.cvds.proyect.booking.persistency.dto.BookingDto;
 import edu.eci.cvds.proyect.booking.persistency.entity.Booking;
 import edu.eci.cvds.proyect.booking.persistency.repository.BookingRepository;
 
@@ -53,42 +49,67 @@ public class BookingService implements BookingsService{
 
     @Override
     public Booking createBooking(Booking booking, User user) throws AppException {
-        isValidBooking(booking);
+        isValidBooking(booking);  // Verifica que la reserva sea válida
 
-        booking.setId(UUID.randomUUID().toString());
-        booking.setLaboratoryName(booking.getLaboratoryName());
-        booking.setStartHour(booking.getStartHour());
-        booking.setEndHour(booking.getEndHour());
-        booking.setOwnerIds(Collections.singletonList(user.getId()));
+        // Crear una nueva instancia con un ID único
+        Booking newBooking = new Booking(UUID.randomUUID().toString());
 
-        return bookingRepository.insert(booking);
+        // Copiar los atributos necesarios
+        newBooking.setLaboratoryName(booking.getLaboratoryName());
+        newBooking.setDay(booking.getDay());
+        newBooking.setStartHour(booking.getStartHour());
+        newBooking.setEndHour(booking.getEndHour());
+        newBooking.setAvailable(true); // Se asume que una nueva reserva está disponible
+
+        // Inicializar ownerIds con el usuario actual
+        newBooking.setOwnerIds(Collections.singletonList(user.getId()));
+
+        // Establecer la prioridad si existe, o asignar un valor por defecto
+        newBooking.setPriority(booking.getPriority() != null ? booking.getPriority() : 3);
+
+        // Guardar en la base de datos
+        return bookingRepository.insert(newBooking);
     }
+
+
 
     @Override
     public Booking updateBooking(String id, Booking booking, User user) throws AppException {
+        Optional<Booking> existingBookingOpt = bookingRepository.findById(id);
 
-        Optional<Booking> existingBooking = bookingRepository.findById(id);
+        if (existingBookingOpt.isPresent()) {
+            Booking existingBooking = existingBookingOpt.get();
 
-        if (existingBooking.isPresent()) {
-            Booking bookingToUpdate = existingBooking.get();
+            // Actualizar solo los atributos que no sean nulos
+            if (booking.getLaboratoryName() != null) {
+                existingBooking.setLaboratoryName(booking.getLaboratoryName());
+            }
+            if (booking.getDay() != null) {
+                existingBooking.setDay(booking.getDay());
+            }
+            if (booking.getStartHour() != null) {
+                existingBooking.setStartHour(booking.getStartHour());
+            }
+            if (booking.getEndHour() != null) {
+                existingBooking.setEndHour(booking.getEndHour());
+            }
+            if (booking.getAvailable() != null) {
+                existingBooking.setAvailable(booking.getAvailable());
+            }
+            if (booking.getPriority() != null) { // Evita problemas con 0
+                existingBooking.setPriority(booking.getPriority());
+            }
 
-            bookingToUpdate.setName(booking.getLaboratoryName() == null ? bookingToUpdate.getName() : booking.getName());
-            bookingToUpdate.setDescription(booking.getDescription() == null ? bookingToUpdate.getDescription() : booking.getDescription());
-            bookingToUpdate.setDeadline(booking.getDeadline() == null ? bookingToUpdate.getDeadline() : booking.getDeadline());
-            bookingToUpdate.setPriority(booking.getPriority() == 0 ? bookingToUpdate.getPriority() : booking.getPriority());
-            bookingToUpdate.setDifficulty(booking.getDifficulty() == null ? bookingToUpdate.getDifficulty() : booking.getDifficulty());
-            bookingToUpdate.setDone(booking.isDone());
+            // Validar la reserva antes de guardarla
+            isValidBooking(existingBooking);
 
-            bookingToUpdate.setUpdatedAt(LocalDateTime.now());
-            this.isValidBooking(bookingToUpdate);
-
-            this.bookingRepository.save(bookingToUpdate);
-
-            return bookingToUpdate;
+            // Guardar la reserva actualizada en la base de datos
+            return bookingRepository.save(existingBooking);
         }
 
         throw new BookingException.BookingNotFoundException(id);
     }
+
 
     @Override
     public Booking deleteBooking(String id, User user) throws AppException {
@@ -105,35 +126,39 @@ public class BookingService implements BookingsService{
     @Override
     public List<Booking> generateExamples(User user) throws AppException {
         Random random = new Random();
-        int numberOfBookings = random.nextInt(901) + 100;
+        int numberOfBookings = random.nextInt(901) + 100; // Genera entre 100 y 1000 reservas
         List<Booking> bookings = new ArrayList<>();
 
         for (int i = 0; i < numberOfBookings; i++) {
-            Booking booking = new Booking();
+            Booking booking = new Booking(UUID.randomUUID().toString());
 
-            booking.setId(UUID.randomUUID().toString());
+            // Seleccionar valores aleatorios válidos
+            booking.setLaboratoryName(LaboratoryName.values()[random.nextInt(LaboratoryName.values().length)]);
+            booking.setDay(Day.values()[random.nextInt(Day.values().length)]);
 
-            booking.setName("Task: " + (i + 1));
-            booking.setDescription("Description for Task " + (i + 1));
-            booking.setPriority(random.nextInt(5) + 1);
-            booking.setDifficulty(String.valueOf(Difficulty.values()[random.nextInt(Difficulty.values().length)]));
-            booking.setDone(random.nextBoolean());
+            // Seleccionar una hora aleatoria de las disponibles en el enum Hour
+            Hour[] hours = Hour.values();
+            Hour startHour = hours[random.nextInt(hours.length)];
+            Hour endHour = hours[Math.min(startHour.ordinal() + 1, hours.length - 1)]; // Siguiente hora disponible
 
-            booking.setDeadline(this.getRandomDateTime(LocalDate.now().plusDays(-5), LocalTime.now(), 25));
+            booking.setStartHour(startHour);
+            booking.setEndHour(endHour);
 
-            final LocalDateTime randomDateTime = this.getRandomDateTime(LocalDate.now(), LocalTime.now(), 30);
-            booking.setCreatedAt(randomDateTime);
-            booking.setUpdatedAt(randomDateTime);
+            booking.setPriority(random.nextInt(5) + 1); // Prioridad entre 1 y 5
+            booking.setAvailable(random.nextBoolean()); // Disponible o no
+            booking.setOwnerIds(Collections.singletonList(user.getId())); // Usuario creador
 
-            booking.setOwnerIds(Collections.singletonList(user.getId()));
-
-            this.isValidTask(booking);
-
+            // Validar antes de agregar
+            isValidBooking(booking);
             bookings.add(booking);
         }
-        this.bookingRepository.insert(bookings);
+
+        // Guardar en la base de datos
+        bookingRepository.insert(bookings);
         return bookings;
     }
+
+
 
     public LocalDateTime getRandomDateTime(final LocalDate startDate, final LocalTime startTime, final int daysOfRange) {
         long minDay = LocalDateTime.of(startDate, startTime).toEpochSecond(ZoneOffset.UTC);
@@ -145,30 +170,31 @@ public class BookingService implements BookingsService{
 
     public List<Booking> deleteAllBookings(User user) throws AppException {
         List<Booking> bookingsDeleted = getAllBookings(user);
-        bookingsDeleted.forEach(task -> bookingRepository.deleteByIdAndOwnerIdsContaining(user.getId(), booking.getId()));
+
+        // Se eliminan los bookings asegurando que el usuario sea propietario
+        bookingsDeleted.forEach(booking -> bookingRepository.deleteById(booking.getId()));
 
         return bookingsDeleted;
     }
+
 
     public void isValidBooking(Booking booking) throws AppException {
         if (booking.getLaboratoryName() == null) {
             throw new BookingException.BookingInvalidValueException("Booking laboratory name is required");
         }
-        if (booking.getPriority() < 0 || 5 < booking.getPriority()) {
-            throw new BookingException.BookingInvalidValueException("Booking priority invalid value, out of range [0, 1, 2, 3, 4, 5]");
+
+        if (booking.getPriority() == null || booking.getPriority() < 1 || booking.getPriority() > 5) {
+            throw new BookingException.BookingInvalidValueException("Booking priority invalid value, must be in range [1, 2, 3, 4, 5]");
         }
 
-        if (booking.getDifficulty() != null) {
-
-            try {
-                Difficulty.valueOf(booking.getDifficulty().toUpperCase());
-            } catch (IllegalArgumentException e) {
-                throw new BookingException.BookingInvalidValueException("Booking difficulty is invalid");
-            }
+        if (booking.getStartHour() == null || booking.getEndHour() == null) {
+            throw new BookingException.BookingInvalidValueException("Booking start and end hours are required");
         }
-        if (booking.getUpdatedAt() != null && booking.getCreatedAt() != null && booking.getUpdatedAt().isBefore(booking.getCreatedAt())) {
-            throw new BookingException.BookingInvalidValueException("Task updated at is before created at!");
+
+        if (booking.getStartHour().ordinal() >= booking.getEndHour().ordinal()) {
+            throw new BookingException.BookingInvalidValueException("Booking start hour must be before end hour");
         }
     }
-    
+
+
 }

@@ -17,7 +17,6 @@ public class UserService implements UsersService {
     @Autowired
     private UserRepository userRepository;
 
-
     private User createUser(User user) throws UserException {
         this.validateUser(user);
         user.setId(UUID.randomUUID().toString());
@@ -52,7 +51,8 @@ public class UserService implements UsersService {
                 userToUpdate.setPassword(passwordEncoder.encode(user.getPassword()));
             }
 
-            userToUpdate.setRole(user.getRole() == null || user.getRole().toString().isEmpty() ? userToUpdate.getRole() : user.getRole());
+            userToUpdate.setRole(user.getRole() == null || user.getRole().toString().isEmpty() ? userToUpdate.getRole()
+                    : user.getRole());
 
             userRepository.save(userToUpdate);
             return userToUpdate;
@@ -60,7 +60,6 @@ public class UserService implements UsersService {
 
         throw new UserException.UserNotFoundException(user.getId());
     }
-
 
     public List<User> getAllUsers() throws UserException {
         return userRepository.findAll();
@@ -72,7 +71,7 @@ public class UserService implements UsersService {
     }
 
     @Override
-    public User deleteUser(String id) throws UserException {  //by id, username or gmail?
+    public User deleteUser(String id) throws UserException { // by id, username or gmail?
         return null;
     }
 
@@ -122,7 +121,8 @@ public class UserService implements UsersService {
             throw new UserException.UserInvalidValueException("Name must be between 5 and 30 characters");
         }
         if (!Pattern.matches("^[a-zA-Z0-9._-]+$", name)) {
-            throw new UserException.UserInvalidValueException("Username can only contain alphanumeric characters, dots, hyphens, and underscores");
+            throw new UserException.UserInvalidValueException(
+                    "Username can only contain alphanumeric characters, dots, hyphens, and underscores");
         }
     }
 
