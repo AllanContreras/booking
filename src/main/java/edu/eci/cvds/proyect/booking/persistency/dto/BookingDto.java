@@ -18,15 +18,37 @@ public class BookingDto {
     private Hour endHour;
 
     private BookingStatus status;
+    private Integer priority;
+
+
 
     public BookingDto(Integer userId, LaboratoryName laboratoryName, Day day, Hour startHour, Hour endHour,
-            BookingStatus status) {
+                      BookingStatus status, Integer priority) {
         this.userId = userId;
         this.laboratoryName = laboratoryName;
         this.day = day;
         this.startHour = startHour;
         this.endHour = endHour;
         this.status = status;
+        this.priority=priority;
+    }
+    public BookingDto(Integer userId, LaboratoryName laboratoryName, Day day, Hour startHour, Hour endHour,
+                      BookingStatus status) {
+        this.userId = userId;
+        this.laboratoryName = laboratoryName;
+        this.day = day;
+        this.startHour = startHour;
+        this.endHour = endHour;
+        this.status = status;
+
+    }
+
+    public Integer getPriority() {
+        return priority;
+    }
+
+    public void setPriority(Integer priority) {
+        this.priority = priority;
     }
 
     public Integer getUserId() {

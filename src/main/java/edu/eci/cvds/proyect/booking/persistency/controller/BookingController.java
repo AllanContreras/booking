@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,7 +58,7 @@ public class BookingController {
 
 
     @PostMapping 
-    public ResponseEntity<Object> save(@RequestBody BookingDto bookingDto) {
+    public ResponseEntity<Object> save(@Valid @RequestBody BookingDto bookingDto) {
         try {
             Booking savedBooking = bookingService.save(bookingDto);
             return new ResponseEntity<>(savedBooking, HttpStatus.CREATED);
@@ -71,7 +72,7 @@ public class BookingController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Object> update(@PathVariable("id") Integer id, @RequestBody BookingDto bookingDto) {
+    public ResponseEntity<Object> update(@PathVariable("id") Integer id,@Valid @RequestBody BookingDto bookingDto) {
         try {
             return new ResponseEntity<>(bookingService.update(id, bookingDto), HttpStatus.OK);
         } catch (Exception e) {
@@ -99,5 +100,17 @@ public class BookingController {
             return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
         }
                     
+    }
+
+    // 📌 Nuevo endpoint para generar reservas aleatorias
+    @PostMapping("/generate")
+    public ResponseEntity<Object> generateBookings() {
+        try {
+            List<Booking> generatedBookings = bookingService.generateRandomBookings();
+            return new ResponseEntity<>(Map.of("message", generatedBookings.size() + " reservas generadas correctamente"), HttpStatus.CREATED);
+        } catch (Exception e) {
+            logger.error("Error al generar reservas aleatorias: {}", e.getMessage(), e);
+            return new ResponseEntity<>(Map.of(ERROR_KEY, "Error al generar reservas", MESSAGE_KEY, e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }

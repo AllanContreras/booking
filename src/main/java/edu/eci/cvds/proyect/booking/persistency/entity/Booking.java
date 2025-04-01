@@ -3,6 +3,8 @@ package edu.eci.cvds.proyect.booking.persistency.entity;
 import javax.persistence.Id;
 import edu.eci.cvds.proyect.booking.shedules.Hour;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import edu.eci.cvds.proyect.booking.bookings.BookingStatus;
@@ -26,10 +28,26 @@ public class Booking {
 
     private BookingStatus status;
 
+    @Min(1)
+    @Max(5)
+    private Integer priority;
+
     
 
     public Booking(Integer id, Integer userId, LaboratoryName laboratoryName, Day day, Hour startHour, Hour endHour,
-            BookingStatus status) {
+            BookingStatus status,Integer priority) {
+
+        this.id = id;
+        this.userId = userId;
+        this.laboratoryName = laboratoryName;
+        this.day = day;
+        this.startHour = startHour;
+        this.endHour = endHour;
+        this.status = status;
+        this.priority=priority;
+    }
+    public Booking(Integer id, Integer userId, LaboratoryName laboratoryName, Day day, Hour startHour, Hour endHour,
+                   BookingStatus status) {
         this.id = id;
         this.userId = userId;
         this.laboratoryName = laboratoryName;
@@ -39,6 +57,13 @@ public class Booking {
         this.status = status;
     }
 
+    public Integer getPriority() {
+        return priority;
+    }
+
+    public void setPriority(Integer priority) {
+        this.priority = priority;
+    }
 
     public Integer getId() {
         return id;

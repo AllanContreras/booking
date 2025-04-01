@@ -1,8 +1,15 @@
 package edu.eci.cvds.proyect.booking.persistency.service;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Random;
+import java.util.stream.IntStream;
 
+import edu.eci.cvds.proyect.booking.bookings.BookingStatus;
+import edu.eci.cvds.proyect.booking.laboratorys.LaboratoryName;
+import edu.eci.cvds.proyect.booking.shedules.Day;
+import edu.eci.cvds.proyect.booking.shedules.Hour;
 import org.springframework.stereotype.Service;
 
 import edu.eci.cvds.proyect.booking.persistency.dto.BookingDto;
@@ -15,7 +22,7 @@ public class BookingService {
     private final BookingRepository bookingRepository;
     private static final String BOOKING_ID_NULL = "El ID de la reserva no puede ser null";
     private static final String BOOKING_ID_NOT_FOUND = "Reserva no encontrada con ID: ";
-
+    private final Random random = new Random();
     public BookingService(BookingRepository bookingRepository) {
         this.bookingRepository = bookingRepository;
     }
@@ -37,7 +44,7 @@ public class BookingService {
             throw new RuntimeException("La reserva no puede ser nula");
         }
         Integer id = autoIncrement();
-        Booking booking = new Booking(id, bookingDto.getUserId(), bookingDto.getLaboratoryName(), bookingDto.getDay(),bookingDto.getStartHour(),bookingDto.getEndHour(),bookingDto.getStatus());
+        Booking booking = new Booking(id, bookingDto.getUserId(), bookingDto.getLaboratoryName(), bookingDto.getDay(),bookingDto.getStartHour(),bookingDto.getEndHour(),bookingDto.getStatus(),bookingDto.getPriority());
         return bookingRepository.save(booking);
     }
 
@@ -53,6 +60,7 @@ public class BookingService {
         booking.setStartHour(bookingDto.getStartHour());
         booking.setEndHour(bookingDto.getEndHour());
         booking.setStatus(bookingDto.getStatus());
+        booking.setPriority(bookingDto.getPriority());
         return bookingRepository.save(booking);
     }
 
@@ -72,6 +80,26 @@ public class BookingService {
                 .max(Comparator.comparing(Booking::getId))
                 .orElseThrow(() -> new RuntimeException("No se pudo determinar el siguiente ID"))
                 .getId() + 1;
+    }
+    public List<Booking> generateRandomBookings() {
+        int count = random.nextInt(901) + 100; // Entre 100 y 1000
+        List<Booking> bookings = new ArrayList<>();
+
+        for (int i = 0; i < count; i++) {
+            Integer id = autoIncrement();
+            Integer userId = random.nextInt(1000) + 1;
+            LaboratoryName laboratory = LaboratoryName.values()[random.nextInt(LaboratoryName.values().length)];
+            Day day = Day.values()[random.nextInt(Day.values().length)];
+            Hour startHour = Hour.values()[random.nextInt(Hour.values().length)];
+            Hour endHour = Hour.values()[Math.min(startHour.ordinal() + 1, Hour.values().length - 1)];
+            BookingStatus status = BookingStatus.values()[random.nextInt(BookingStatus.values().length)];
+            Integer priority = random.nextInt(5) + 1;
+
+            Booking booking = new Booking(id, userId, laboratory, day, startHour, endHour, status, priority);
+            bookings.add(booking);
+        }
+
+        return bookingRepository.saveAll(bookings);
     }
     
 }

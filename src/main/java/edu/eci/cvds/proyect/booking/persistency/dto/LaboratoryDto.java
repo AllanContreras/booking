@@ -22,4 +22,5 @@ public class LaboratoryDto {
     public void setLocation(String location) {
         this.location = location;
     }
+
 }
