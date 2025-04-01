@@ -160,12 +160,25 @@ public class BookingService implements BookingsService{
 
 
 
-    public LocalDateTime getRandomDateTime(final LocalDate startDate, final LocalTime startTime, final int daysOfRange) {
-        long minDay = LocalDateTime.of(startDate, startTime).toEpochSecond(ZoneOffset.UTC);
-        long maxDay = LocalDateTime.of(LocalDate.now().plusDays(daysOfRange), startTime).toEpochSecond(ZoneOffset.UTC);
+    public LocalDateTime getRandomDateTime(final LocalDate startDate, final int daysOfRange) {
+        Day[] validDays = Day.values();
+        LocalDate randomDate;
+        
+        // Obtener un día aleatorio dentro del rango y validar
+        do {
+            int randomDays = ThreadLocalRandom.current().nextInt(0, daysOfRange + 1);
+            randomDate = startDate.plusDays(randomDays);
+        } while (!isValidDay(randomDate, validDays));
 
-        long randomDay = ThreadLocalRandom.current().nextLong(minDay, maxDay);
-        return LocalDateTime.ofEpochSecond(randomDay, 0, ZoneOffset.UTC);
+        // Seleccionar una hora aleatoria respetando el rango de 1.5 a 3 horas
+        Hour[] hours = Hour.values();
+        int startIndex = ThreadLocalRandom.current().nextInt(hours.length);
+        int maxRange = Math.min(startIndex + 2, hours.length - 1); // Rango máximo de 3 horas
+        int randomIndex = ThreadLocalRandom.current().nextInt(startIndex, maxRange + 1);
+        Hour randomHour = hours[randomIndex];
+        LocalTime randomTime = LocalTime.parse(randomHour.getHour());
+
+        return LocalDateTime.of(randomDate, randomTime);
     }
 
     public List<Booking> deleteAllBookings(User user) throws AppException {
@@ -196,5 +209,13 @@ public class BookingService implements BookingsService{
         }
     }
 
-
+    private boolean isValidDay(LocalDate date, Day[] validDays) {
+        Day dayOfWeek = Day.valueOf(date.getDayOfWeek().name());
+        for (Day validDay : validDays) {
+            if (dayOfWeek == validDay) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
