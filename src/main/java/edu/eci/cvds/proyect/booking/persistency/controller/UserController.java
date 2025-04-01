@@ -90,12 +90,14 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteUser(@RequestHeader("authorization") String token, @PathVariable String id) {
+    public ResponseEntity<?> deleteUser(
+            @RequestHeader("authorization") String token,
+            @PathVariable String id
+    ) {
         try {
-            userService.deleteUser(id);
+            User deletedUser = userService.deleteUser(id); // Obtener el User eliminado
             this.authorizationService.adminResource(token);
-            return ResponseEntity.ok(Collections.singletonMap("message", "User deleted successfully"));
-
+            return ResponseEntity.ok(deletedUser); // Devolver el User directamente
         } catch (Exception e) {
             if (e instanceof UserException) {
                 return ((UserException) e).getResponse();

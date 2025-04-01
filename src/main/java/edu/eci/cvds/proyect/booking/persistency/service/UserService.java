@@ -38,27 +38,32 @@ public class UserService implements UsersService {
     }
 
     public User updateUser(String id, User user) throws UserException {
-        Optional<User> existingUser = userRepository.findById(id);
+        Optional<User> existingUserOpt = userRepository.findById(id);
 
-        if (existingUser.isPresent()) {
-            User userToUpdate = existingUser.get();
+        if (existingUserOpt.isPresent()) {
+            User userToUpdate = existingUserOpt.get();
 
-            userToUpdate.setName(user.getName() == null ? userToUpdate.getName() : user.getName());
-            userToUpdate.setEmail(user.getEmail() == null ? userToUpdate.getEmail() : user.getEmail());
-
-            if (user.getPassword() != null && !user.getPassword().isEmpty()) {
-                BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-                userToUpdate.setPassword(passwordEncoder.encode(user.getPassword()));
+            // Aplicar cambios
+            if (user.getName() != null) userToUpdate.setName(user.getName());
+            if (user.getEmail() != null) {
+                validateEmail(user.getEmail()); // <-- Validar nuevo email
+                userToUpdate.setEmail(user.getEmail());
             }
-
-            userToUpdate.setRole(user.getRole() == null || user.getRole().toString().isEmpty() ? userToUpdate.getRole()
-                    : user.getRole());
+            if (user.getPassword() != null && !user.getPassword().isEmpty()) {
+                validatePassword(user.getPassword()); // <-- Validar nueva contraseña
+                BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+                userToUpdate.setPassword(encoder.encode(user.getPassword()));
+            }
+            if (user.getRole() != null) {
+                validateRole(user.getRole()); // <-- Validar nuevo rol
+                userToUpdate.setRole(user.getRole());
+            }
 
             userRepository.save(userToUpdate);
             return userToUpdate;
         }
 
-        throw new UserException.UserNotFoundException(user.getId());
+        throw new UserException.UserNotFoundException(id);
     }
 
     public List<User> getAllUsers() throws UserException {
@@ -71,8 +76,14 @@ public class UserService implements UsersService {
     }
 
     @Override
-    public User deleteUser(String id) throws UserException { // by id, username or gmail?
-        return null;
+    public User deleteUser(String id) throws UserException {
+        // Verificar si el usuario existe
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new UserException.UserNotFoundException(id));
+
+        // Si existe, proceder a eliminar
+        userRepository.deleteById(id);
+        return user;
     }
 
     public User loginUser(String name, String password) throws UserException {

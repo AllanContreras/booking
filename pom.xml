@@ -169,6 +169,9 @@
 								</limits>
 							</rule>
 						</rules>
+						<excludes>
+							<exclude>edu/eci/cvds/proyect/booking/bookings/*</exclude>
+						</excludes>
 					</configuration>
 
 				</execution>

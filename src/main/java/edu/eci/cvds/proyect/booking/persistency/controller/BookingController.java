@@ -188,8 +188,11 @@ public class BookingController {
     }
 
     private User getUserFromSessions(String sessionToken) throws SessionException {
-        if (sessionToken == null || !this.sessionService.isSessionActive(sessionToken)) {
-            return null;
+        if (sessionToken == null) {
+            throw new SessionException.SessionNotFoundException(null);
+        }
+        if (!this.sessionService.isSessionActive(sessionToken)) {
+            throw new SessionException.InvalidSessionException(sessionToken);
         }
         return this.sessionService.getUserFromSession(sessionToken);
     }

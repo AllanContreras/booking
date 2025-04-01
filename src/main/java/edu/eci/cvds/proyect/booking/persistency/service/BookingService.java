@@ -49,8 +49,6 @@ public class BookingService implements BookingsService{
 
     @Override
     public Booking createBooking(Booking booking, User user) throws AppException {
-        isValidBooking(booking);  // Verifica que la reserva sea válida
-
         // Crear una nueva instancia con un ID único
         Booking newBooking = new Booking(UUID.randomUUID().toString());
 
@@ -59,18 +57,20 @@ public class BookingService implements BookingsService{
         newBooking.setDay(booking.getDay());
         newBooking.setStartHour(booking.getStartHour());
         newBooking.setEndHour(booking.getEndHour());
-        newBooking.setAvailable(true); // Se asume que una nueva reserva está disponible
+        newBooking.setAvailable(true);
+
+        // Asignar prioridad por defecto si es necesario
+        newBooking.setPriority(booking.getPriority() != null ? booking.getPriority() : 3); // <-- Prioridad asignada aquí
+
+        // Validar la nueva reserva (no la de entrada)
+        isValidBooking(newBooking); // <-- Validación después de asignar valores
 
         // Inicializar ownerIds con el usuario actual
         newBooking.setOwnerIds(Collections.singletonList(user.getId()));
 
-        // Establecer la prioridad si existe, o asignar un valor por defecto
-        newBooking.setPriority(booking.getPriority() != null ? booking.getPriority() : 3);
-
         // Guardar en la base de datos
         return bookingRepository.insert(newBooking);
     }
-
 
 
     @Override
@@ -126,34 +126,29 @@ public class BookingService implements BookingsService{
     @Override
     public List<Booking> generateExamples(User user) throws AppException {
         Random random = new Random();
-        int numberOfBookings = random.nextInt(901) + 100; // Genera entre 100 y 1000 reservas
+        int numberOfBookings = random.nextInt(901) + 100;
         List<Booking> bookings = new ArrayList<>();
+        Hour[] hours = Hour.values();
 
         for (int i = 0; i < numberOfBookings; i++) {
             Booking booking = new Booking(UUID.randomUUID().toString());
 
-            // Seleccionar valores aleatorios válidos
+            // Asegurar que startHour tenga espacio para endHour
+            int startIndex = random.nextInt(hours.length - 1); // No puede ser la última hora
+            int endIndex = startIndex + 1 + random.nextInt(hours.length - startIndex - 1);
+
             booking.setLaboratoryName(LaboratoryName.values()[random.nextInt(LaboratoryName.values().length)]);
             booking.setDay(Day.values()[random.nextInt(Day.values().length)]);
+            booking.setStartHour(hours[startIndex]);
+            booking.setEndHour(hours[endIndex]);
+            booking.setPriority(random.nextInt(5) + 1);
+            booking.setAvailable(random.nextBoolean());
+            booking.setOwnerIds(Collections.singletonList(user.getId()));
 
-            // Seleccionar una hora aleatoria de las disponibles en el enum Hour
-            Hour[] hours = Hour.values();
-            Hour startHour = hours[random.nextInt(hours.length)];
-            Hour endHour = hours[Math.min(startHour.ordinal() + 1, hours.length - 1)]; // Siguiente hora disponible
-
-            booking.setStartHour(startHour);
-            booking.setEndHour(endHour);
-
-            booking.setPriority(random.nextInt(5) + 1); // Prioridad entre 1 y 5
-            booking.setAvailable(random.nextBoolean()); // Disponible o no
-            booking.setOwnerIds(Collections.singletonList(user.getId())); // Usuario creador
-
-            // Validar antes de agregar
             isValidBooking(booking);
             bookings.add(booking);
         }
 
-        // Guardar en la base de datos
         bookingRepository.insert(bookings);
         return bookings;
     }
@@ -163,20 +158,23 @@ public class BookingService implements BookingsService{
     public LocalDateTime getRandomDateTime(final LocalDate startDate, final int daysOfRange) {
         Day[] validDays = Day.values();
         LocalDate randomDate;
-        
-        // Obtener un día aleatorio dentro del rango y validar
+
         do {
             int randomDays = ThreadLocalRandom.current().nextInt(0, daysOfRange + 1);
             randomDate = startDate.plusDays(randomDays);
         } while (!isValidDay(randomDate, validDays));
 
-        // Seleccionar una hora aleatoria respetando el rango de 1.5 a 3 horas
+        // Asegurar que el índice no se salga del array
         Hour[] hours = Hour.values();
-        int startIndex = ThreadLocalRandom.current().nextInt(hours.length);
-        int maxRange = Math.min(startIndex + 2, hours.length - 1); // Rango máximo de 3 horas
-        int randomIndex = ThreadLocalRandom.current().nextInt(startIndex, maxRange + 1);
-        Hour randomHour = hours[randomIndex];
-        LocalTime randomTime = LocalTime.parse(randomHour.getHour());
+        int startIndex = ThreadLocalRandom.current().nextInt(hours.length - 3); // -3 para permitir hasta 3 horas de rango
+        int endIndex = startIndex + 1 + ThreadLocalRandom.current().nextInt(3); // 1 a 3 horas de diferencia
+
+        // Convertir la hora del enum a LocalTime correctamente
+        String[] partes = hours[startIndex].getHour().split(":");
+        int horas = Integer.parseInt(partes[0]);
+        int minutos = Integer.parseInt(partes[1]);
+
+        LocalTime randomTime = LocalTime.of(horas, minutos);
 
         return LocalDateTime.of(randomDate, randomTime);
     }
@@ -209,8 +207,8 @@ public class BookingService implements BookingsService{
         }
     }
 
-    private boolean isValidDay(LocalDate date, Day[] validDays) {
-        Day dayOfWeek = Day.valueOf(date.getDayOfWeek().name());
+    public boolean isValidDay(LocalDate date, Day[] validDays) {
+        Day dayOfWeek = Day.fromDayOfWeek(date.getDayOfWeek()); // <-- Método clave
         for (Day validDay : validDays) {
             if (dayOfWeek == validDay) {
                 return true;
