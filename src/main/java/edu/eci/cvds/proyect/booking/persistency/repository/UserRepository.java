@@ -5,6 +5,7 @@ import org.springframework.stereotype.Repository;
 import edu.eci.cvds.proyect.booking.persistency.entity.User;
 
 @Repository
-public interface UserRepository extends MongoRepository<User, Integer> {
-
+public interface UserRepository extends MongoRepository<User, String> {
+    User findByName(String name);
+    User findByEmail(String email);
 }

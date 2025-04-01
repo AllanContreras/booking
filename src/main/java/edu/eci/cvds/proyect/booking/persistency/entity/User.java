@@ -9,7 +9,7 @@ import edu.eci.cvds.proyect.booking.users.UserRole;
 @Document(collection = "Users")
 public class User {
     @Id
-    private Integer id;
+    private String id;
 
     private String name;
 
@@ -19,7 +19,7 @@ public class User {
 
     private String password;
 
-    public User(Integer id, String name, String email, UserRole role, String password) {
+    public User(String id, String name, String email, UserRole role, String password) {
         super();
         this.id = id;
         this.name = name;
@@ -28,11 +28,11 @@ public class User {
         this.password = password;
     }
 
-    public Integer getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(String id) {
         this.id = id;
     }
 

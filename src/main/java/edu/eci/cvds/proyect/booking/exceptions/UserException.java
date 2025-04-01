@@ -44,13 +44,13 @@ public class UserException extends AppException {
 
          *
 
-         * @param name The username of the user that was not found.
+         * @param id The id of the user that was not found.
 
          */
 
-        public UserNotFoundException(String name) {
+        public UserNotFoundException(String id) {
 
-            super("User with ID: " + name + ", not found in the database.", 404);
+            super("User with ID: " + id + ", not found in the database.", 404);
 
         }
 

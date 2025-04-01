@@ -2,6 +2,7 @@ package edu.eci.cvds.proyect.booking.persistency.service;
 
 import edu.eci.cvds.proyect.booking.exceptions.AppException;
 import edu.eci.cvds.proyect.booking.persistency.entity.User;
+import edu.eci.cvds.proyect.booking.users.UserRole;
 
 import java.util.List;
 
@@ -29,7 +30,7 @@ public interface UsersService {
 
      */
 
-    User createUserAsAdmin(User user, String role) throws AppException;
+    User createUserAsAdmin(User user) throws AppException;
 
     /**
 
@@ -45,7 +46,7 @@ public interface UsersService {
 
      */
 
-    User createUserAsUser(User user) throws AppException;
+    User createUserAsUser(User user, UserRole role) throws AppException;
 
     /**
 

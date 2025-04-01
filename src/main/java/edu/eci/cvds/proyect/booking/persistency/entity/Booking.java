@@ -3,20 +3,19 @@ package edu.eci.cvds.proyect.booking.persistency.entity;
 import javax.persistence.Id;
 import edu.eci.cvds.proyect.booking.shedules.Hour;
 
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
+
+import java.util.List;
+import java.util.Objects;
+
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import edu.eci.cvds.proyect.booking.bookings.BookingStatus;
 import edu.eci.cvds.proyect.booking.laboratorys.LaboratoryName;
 import edu.eci.cvds.proyect.booking.shedules.Day;
 
 @Document(collection = "Bookings")
 public class Booking {
     @Id
-    private Integer id;
-
-    private Integer userId;
+    private String id;
 
     private LaboratoryName laboratoryName;
 
@@ -26,59 +25,26 @@ public class Booking {
 
     private Hour endHour;
 
-    private BookingStatus status;
+    private Boolean available;
 
-    @Min(1)
-    @Max(5)
+    private List<String> ownerIds;
+
+
     private Integer priority;
 
-    
+    public Booking() {
+    }
 
-    public Booking(Integer id, Integer userId, LaboratoryName laboratoryName, Day day, Hour startHour, Hour endHour,
-            BookingStatus status,Integer priority) {
-
+    public Booking(String id) {
         this.id = id;
-        this.userId = userId;
-        this.laboratoryName = laboratoryName;
-        this.day = day;
-        this.startHour = startHour;
-        this.endHour = endHour;
-        this.status = status;
-        this.priority=priority;
-    }
-    public Booking(Integer id, Integer userId, LaboratoryName laboratoryName, Day day, Hour startHour, Hour endHour,
-                   BookingStatus status) {
-        this.id = id;
-        this.userId = userId;
-        this.laboratoryName = laboratoryName;
-        this.day = day;
-        this.startHour = startHour;
-        this.endHour = endHour;
-        this.status = status;
     }
 
-    public Integer getPriority() {
-        return priority;
-    }
-
-    public void setPriority(Integer priority) {
-        this.priority = priority;
-    }
-
-    public Integer getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(String id) {
         this.id = id;
-    }
-
-    public Integer getUserId() {
-        return userId;
-    }
-
-    public void setUserId(Integer userId) {
-        this.userId = userId;
     }
 
     public LaboratoryName getLaboratoryName() {
@@ -113,13 +79,67 @@ public class Booking {
         this.endHour = endHour;
     }
 
-    public BookingStatus getStatus() {
-        return status;
+    public Boolean getAvailable() {
+        return available;
     }
 
-    public void setStatus(BookingStatus status) {
-        this.status = status;
+    public void setAvailable(Boolean available) {
+        this.available = available;
     }
-    
+
+    public List<String> getOwnerIds() {
+        return ownerIds;
+    }
+
+    public void setOwnerIds(List<String> ownerIds) {
+        this.ownerIds = ownerIds;
+    }
+
+    public Integer getPriority() {
+        return priority;
+    }
+
+    public void addOwnerId(String ownerId) {
+        this.ownerIds.add(ownerId);
+    }
+
+    public void removeOwnerId(String ownerId) {
+        this.ownerIds.remove(ownerId);
+
+    }
+
+    public void setPriority(Integer priority) {
+        this.priority = priority;
+    }
+
+    @Override
+    public String toString() {
+        return "Booking{" +
+                "id='" + id + '\'' +
+                ", laboratoryName='" + laboratoryName + '\'' +
+                ", day='" + day + '\'' +
+                ", startHour='" + startHour + '\'' +
+                ", endHour='" + endHour + '\'' +
+                ", available='" + available + '\'' +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+        Booking booking = (Booking) obj;
+        return available == booking.available &&
+                Objects.equals(id, booking.id) &&
+                Objects.equals(laboratoryName, booking.laboratoryName) &&
+                Objects.equals(day, booking.day) &&
+                Objects.equals(startHour, booking.startHour) &&
+                Objects.equals(endHour, booking.endHour) &&
+                Objects.equals(available, booking.available);
+    }
+
 }
-

@@ -1,13 +1,11 @@
 package edu.eci.cvds.proyect.booking.persistency.service;
 
 import edu.eci.cvds.proyect.booking.exceptions.SessionException;
+import edu.eci.cvds.proyect.booking.persistency.entity.User;
 import org.springframework.stereotype.Service;
-
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import org.springframework.security.core.userdetails.User;
 import java.util.UUID;
-import edu.eci.cvds.proyect.booking.persistency.entity.User;
 
 
 @Service
