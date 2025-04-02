@@ -19,7 +19,7 @@ public class JwtUtil {
                 .withSubject(user.getEmail())
                 .withClaim("role", user.getRole().name()) 
                 .withIssuedAt(new Date())
-                .withExpiresAt(new Date(System.currentTimeMillis() + 3600000)) // 1 hora
+                .withExpiresAt(new Date(System.currentTimeMillis() + 3600000)) 
                 .sign(Algorithm.HMAC256(SECRET_KEY));
     }
 
@@ -36,5 +36,21 @@ public class JwtUtil {
         } catch (Exception e) {
             return false;
         }
+    }
+    public boolean validateToken(String token) {
+        try {
+            JWT.require(Algorithm.HMAC256(SECRET_KEY))
+                    .build()
+                    .verify(token);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+    public String extractRole(String token) {
+        DecodedJWT decodedJWT = JWT.require(Algorithm.HMAC256(SECRET_KEY))
+                .build()
+                .verify(token);
+        return decodedJWT.getClaim("role").asString();
     }
 }

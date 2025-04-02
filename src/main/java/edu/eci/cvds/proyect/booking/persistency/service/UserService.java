@@ -41,7 +41,16 @@ public class UserService {
             throw new RuntimeException("El usuario no puede ser nulo");
         }
         Integer id = autoIncrement();
-        User user = new User(id, userDto.getName(), userDto.getEmail(), userDto.getRole(), userDto.getPassword());
+        String encryptedPassword = passwordEncoder.encode(userDto.getPassword()); // Encripta la contraseña
+        User user = new User(id, userDto.getName(), userDto.getEmail(), userDto.getRole(), encryptedPassword);
+        return userRepository.save(user);
+    }
+    public User save(UserDto userDto, String requesterRole) {
+        
+
+        Integer id = autoIncrement();
+        String encryptedPassword = passwordEncoder.encode(userDto.getPassword());
+        User user = new User(id, userDto.getName(), userDto.getEmail(), userDto.getRole(), encryptedPassword);
         return userRepository.save(user);
     }
 

@@ -9,7 +9,7 @@ public class SecurityConfig {
             .csrf().disable()
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/auth/login").permitAll()
-                .requestMatchers("/admin/**").hasRole("ADMIN")
+                .requestMatchers("/principal_admin/**").hasRole("ADMIN")
                 .requestMatchers("/principal/**").hasRole("TEACHER")
                 .requestMatchers("/principal/**").hasRole("ADMIN")
                 .anyRequest().authenticated()

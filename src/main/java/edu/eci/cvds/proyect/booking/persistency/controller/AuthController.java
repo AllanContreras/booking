@@ -1,6 +1,8 @@
 package edu.eci.cvds.proyect.booking.persistency.controller;
 
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +23,7 @@ import edu.eci.cvds.proyect.booking.persistency.service.UserService;
 
 @RestController
 @RequestMapping("/auth")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "*")
 public class AuthController {
 
     private final AuthService authService;
@@ -39,7 +41,17 @@ public class AuthController {
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         Optional<User> user = userService.findByEmail(request.getEmail());
 
+        if (user.isEmpty() || !authService.authenticate(request.getEmail(), request.getPassword())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.singletonMap("error", "Credenciales incorrectas"));
+        }
+
         String token = jwtUtil.generateToken(user.get());
-        return ResponseEntity.ok(Collections.singletonMap("token", token));
+        Map<String, String> response = new HashMap<>();
+        response.put("token", token);
+        response.put("role", user.get().getRole().name());
+        response.put("id", user.get().getId().toString());
+
+        return ResponseEntity.ok(response);
     }
+
 }

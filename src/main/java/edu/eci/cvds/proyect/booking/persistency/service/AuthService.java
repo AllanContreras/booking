@@ -14,10 +14,12 @@ import edu.eci.cvds.proyect.booking.persistency.entity.User;
 public class AuthService {
 
     private final UserRepository userRepository;
+    private final CustomPasswordEncoder passwordEncoder;
 
     @Autowired
-    public AuthService(UserRepository userRepository) {
+    public AuthService(UserRepository userRepository, CustomPasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public boolean authenticate(String email, String password) {
@@ -27,6 +29,6 @@ public class AuthService {
         }
 
         User user = optionalUser.get();
-        return CustomPasswordEncoder.matches(password, user.getPassword());
+        return passwordEncoder.matches(password, user.getPassword()); // Ahora se usa correctamente la instancia
     }
 }
