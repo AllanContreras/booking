@@ -10,4 +10,4 @@
 
 ## Diagrama de clases 
 
-![alt text](resources/image.png)
+![DIagrama-de-clases backend](https://github.com/user-attachments/assets/975aa38d-e0c3-4a6d-85ed-5e4381315d1c)
