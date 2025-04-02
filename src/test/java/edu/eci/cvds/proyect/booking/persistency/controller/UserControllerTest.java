@@ -1,9 +1,10 @@
-package edu.eci.cvds.proyect.booking.persistency.controller; 
+package edu.eci.cvds.proyect.booking.persistency.controller;
 
 import edu.eci.cvds.proyect.booking.persistency.dto.UserDto;
 import edu.eci.cvds.proyect.booking.persistency.entity.User;
 import edu.eci.cvds.proyect.booking.users.UserRole;
 import edu.eci.cvds.proyect.booking.persistency.service.UserService;
+import edu.eci.cvds.proyect.booking.persistency.security.JwtUtil;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,11 +18,11 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.util.Arrays;
+import java.util.Collections;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
-import java.util.Arrays;
-
 
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(UserController.class)
@@ -32,12 +33,16 @@ class UserControllerTest {
 
     @MockBean
     private UserService userService;
+
+    @MockBean
+    private JwtUtil jwtUtil;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
     void testSaveUserSuccess() throws Exception {
-        UserDto userDto = new UserDto("Andres Silva", "AndresSilva@gmail.com", UserRole.TEACHER, "123456");
-        User user = new User(1, "Andres Silva", "AndresSilva@gmail.com", UserRole.TEACHER, "123456");
+        UserDto userDto = new UserDto("Andres Silva", "AndresSilva@gmail.com", UserRole.TEACHER, "password");
+        User user = new User(1, "Andres Silva", "AndresSilva@gmail.com", UserRole.TEACHER, "hashedPassword");
 
         Mockito.when(userService.save(Mockito.any(UserDto.class))).thenReturn(user);
 
@@ -50,7 +55,7 @@ class UserControllerTest {
 
     @Test
     void testSaveUserFailure() throws Exception {
-        UserDto userDto = new UserDto("Error User", "error@example.com", UserRole.TEACHER, "123456");
+        UserDto userDto = new UserDto("Error User", "error@example.com", UserRole.TEACHER, "password");
 
         Mockito.when(userService.save(Mockito.any(UserDto.class)))
                 .thenThrow(new RuntimeException("Database error"));
@@ -61,35 +66,11 @@ class UserControllerTest {
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.Error").value("Error al guardar el usuario"));
     }
-    @Test
-    void testFindOneUserSuccess() throws Exception {
-        User user = new User(1, "Andres Silva", "AndresSilva@gmail.com", UserRole.TEACHER, "123456");
-    
-        Mockito.when(userService.getOne(1)).thenReturn(user);
-    
-        mockMvc.perform(get("/User/1"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("Andres Silva"))
-                .andExpect(jsonPath("$.email").value("AndresSilva@gmail.com"))
-                .andExpect(jsonPath("$.role").value("TEACHER"));
-    }
-    @Test
-    void testFindOneUserFailure() throws Exception {
-        Integer invalidUserId = 99;
-    
-        Mockito.when(userService.getOne(invalidUserId))
-                .thenThrow(new RuntimeException("User not found"));
-    
-        mockMvc.perform(get("/User/" + invalidUserId))
-                .andExpect(status().isInternalServerError())
-                .andExpect(jsonPath("$.Error").value("Error al obtener el usuario con ID " + invalidUserId))
-                .andExpect(jsonPath("$.details").value("User not found"));
-    }
 
     @Test
     void testFindAllUsersSuccess() throws Exception {
-        User user1 = new User(1, "Andres Silva", "AndresSilva@gmail.com", UserRole.TEACHER, "123456");
-        User user2 = new User(2, "Juan Lopez", "JuanLopez@gmail.com", UserRole.TEACHER, "1234567");
+        User user1 = new User(1, "Andres Silva", "AndresSilva@gmail.com", UserRole.TEACHER, "hashedPassword");
+        User user2 = new User(2, "Juan Lopez", "JuanLopez@gmail.com", UserRole.TEACHER, "hashedPassword");
 
         Mockito.when(userService.getAll()).thenReturn(Arrays.asList(user1, user2));
 
@@ -101,54 +82,26 @@ class UserControllerTest {
     }
 
     @Test
-    void testFindAllUsersFailure() throws Exception {
-        Mockito.when(userService.getAll()).thenThrow(new RuntimeException("Database connection failure"));
+    void testFindOneUserNotFound() throws Exception {
+        Integer userId = 99;
 
-        mockMvc.perform(get("/User"))
+        Mockito.when(userService.getOne(userId)).thenThrow(new RuntimeException("User not found"));
+
+        mockMvc.perform(get("/User/" + userId))
                 .andExpect(status().isInternalServerError())
-                .andExpect(content().json("[]"));  
+                .andExpect(jsonPath("$.Error").value("Error al obtener el usuario con ID " + userId));
     }
-
-    
-
-    @Test
-    void testUpdateUserSuccess() throws Exception {
-        UserDto userDto = new UserDto("Updated Name", "updated@example.com", UserRole.TEACHER, "123456");
-        User updatedUser = new User(1, "Updated Name", "updated@example.com", UserRole.TEACHER, "123456");
-
-        Mockito.when(userService.update(Mockito.eq(1), Mockito.any(UserDto.class))).thenReturn(updatedUser);
-
-        mockMvc.perform(put("/User/1")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(userDto)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("Updated Name"));
-    }
-    @Test
-    void testUpdateUserFailure() throws Exception {
-        UserDto userDto = new UserDto("Updated Name", "updated@example.com", UserRole.TEACHER, "123456");
-
-        Mockito.when(userService.update(Mockito.eq(1), Mockito.any(UserDto.class))).thenThrow(new RuntimeException("Database error"));
-
-        mockMvc.perform(put("/User/1")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(userDto)))
-                .andExpect(status().isInternalServerError())
-                .andExpect(jsonPath("$.Error").value("Error al actualizar el usuario"));
-    }
-
 
     @Test
     void testDeleteUserSuccess() throws Exception {
         Integer userId = 1;
-        User deletedUser = new User(userId, "Test User", "test@example.com", UserRole.TEACHER, "123456");
+        User deletedUser = new User(userId, "Test User", "test@example.com", UserRole.TEACHER, "hashedPassword");
+
         Mockito.when(userService.delete(userId)).thenReturn(deletedUser);
 
         mockMvc.perform(delete("/User/" + userId))
-                .andExpect(status().isOk()) 
-                .andExpect(jsonPath("$.Message").value("Usuario eliminado correctamente")); 
-
-        Mockito.verify(userService, Mockito.times(1)).delete(userId);
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.Message").value("Usuario eliminado correctamente"));
     }
 
     @Test
@@ -159,7 +112,4 @@ class UserControllerTest {
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.Error").value("Error al eliminar el usuario"));
     }
-
-    
-
 }

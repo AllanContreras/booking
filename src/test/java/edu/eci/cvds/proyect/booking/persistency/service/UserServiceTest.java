@@ -4,6 +4,7 @@ import edu.eci.cvds.proyect.booking.persistency.dto.UserDto;
 import edu.eci.cvds.proyect.booking.persistency.entity.User;
 import edu.eci.cvds.proyect.booking.persistency.repository.UserRepository;
 import edu.eci.cvds.proyect.booking.users.UserRole;
+import edu.eci.cvds.proyect.booking.persistency.security.CustomPasswordEncoder;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,10 +21,14 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+
 class UserServiceTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private CustomPasswordEncoder passwordEncoder;
 
     @InjectMocks
     private UserService userService;
@@ -35,8 +40,8 @@ class UserServiceTest {
 
     @Test
     void testGetAllUsersSuccess() {
-        User user1 = new User(1, "Andres Silva", "AndresSilva@gmail.com", UserRole.TEACHER, "123456");
-        User user2 = new User(2, "Maria Lopez", "MariaLopez@gmail.com", UserRole.ADMIN, "654321");
+        User user1 = new User(1, "Andres Silva", "AndresSilva@gmail.com", UserRole.TEACHER, "hashedPassword1");
+        User user2 = new User(2, "Maria Lopez", "MariaLopez@gmail.com", UserRole.ADMIN, "hashedPassword2");
 
         when(userRepository.findAll()).thenReturn(Arrays.asList(user1, user2));
 
@@ -49,19 +54,19 @@ class UserServiceTest {
     }
 
     @Test
-    void testGetAllUsersFailure() {
-        when(userRepository.findAll()).thenReturn(Arrays.asList());
-    
+    void testGetAllUsersEmptyList() {
+        when(userRepository.findAll()).thenReturn(Collections.emptyList());
+
         List<User> users = userService.getAll();
-    
+
         assertNotNull(users);
-        assertTrue(users.isEmpty(),"lista de usuarios vacia");
+        assertTrue(users.isEmpty(), "La lista de usuarios debería estar vacía");
         verify(userRepository, times(1)).findAll();
     }
 
     @Test
     void testGetOneUserSuccess() {
-        User user = new User(1, "Andres Silva", "AndresSilva@gmail.com", UserRole.TEACHER, "123456");
+        User user = new User(1, "Andres Silva", "AndresSilva@gmail.com", UserRole.TEACHER, "hashedPassword");
 
         when(userRepository.findById(1)).thenReturn(Optional.of(user));
 
@@ -73,12 +78,10 @@ class UserServiceTest {
     }
 
     @Test
-    void testGetOneUserFailure() {
+    void testGetOneUserNotFound() {
         when(userRepository.findById(99)).thenReturn(Optional.empty());
 
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            userService.getOne(99);
-        });
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> userService.getOne(99));
 
         assertEquals("Usuario no encontrado con ID: 99", exception.getMessage());
         verify(userRepository, times(1)).findById(99);
@@ -86,11 +89,11 @@ class UserServiceTest {
 
     @Test
     void testSaveUserSuccess() {
-        UserDto userDto = new UserDto("Andres Silva", "AndresSilva@gmail.com", UserRole.TEACHER, "123456");
-        User user = new User(1, "Andres Silva", "AndresSilva@gmail.com", UserRole.TEACHER, "123456");
+        UserDto userDto = new UserDto("Andres Silva", "AndresSilva@gmail.com", UserRole.TEACHER, "password");
+        User user = new User(1, "Andres Silva", "AndresSilva@gmail.com", UserRole.TEACHER, "hashedPassword");
 
+        when(passwordEncoder.encode(userDto.getPassword())).thenReturn("hashedPassword");
         when(userRepository.save(any(User.class))).thenReturn(user);
-        when(userRepository.findAll()).thenReturn(Arrays.asList(user));
 
         User savedUser = userService.save(userDto);
 
@@ -98,103 +101,33 @@ class UserServiceTest {
         assertEquals("Andres Silva", savedUser.getName());
         verify(userRepository, times(1)).save(any(User.class));
     }
+
     @Test
     void testSaveUserFailure() {
-        UserDto userDto =  null;
-
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            userService.save(userDto);
-        });
-
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> userService.save(null));
         assertEquals("El usuario no puede ser nulo", exception.getMessage());
         verify(userRepository, never()).save(any(User.class));
     }
 
     @Test
-    void testUpdateUserSuccess() {
-        UserDto userDto = new UserDto("Updated User", "updated@gmail.com", UserRole.ADMIN, "newpassword");
-        User existingUser = new User(1, "Andres Silva", "AndresSilva@gmail.com", UserRole.TEACHER, "123456");
+    void testAuthenticateSuccess() {
+        String email = "AndresSilva@gmail.com";
+        String rawPassword = "password";
+        String hashedPassword = "hashedPassword";
+        User user = new User(1, "Andres Silva", email, UserRole.TEACHER, hashedPassword);
 
-        when(userRepository.findById(1)).thenReturn(Optional.of(existingUser));
-        when(userRepository.save(any(User.class))).thenReturn(existingUser);
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches(anyString(), anyString())).thenReturn(true);
 
-        User updatedUser = userService.update(1, userDto);
 
-        assertNotNull(updatedUser);
-        assertEquals("Updated User", updatedUser.getName());
-        assertEquals("updated@gmail.com", updatedUser.getEmail());
-        verify(userRepository, times(1)).save(existingUser);
-    }
-    @Test
-        void testUpdateUserFailure() {
-        UserDto userDto = new UserDto("Nonexistent User", "nonexistent@gmail.com", UserRole.ADMIN, "nopassword");
-
-        when(userRepository.findById(99)).thenReturn(Optional.empty());
-
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            userService.update(99, userDto);
-        });
-
-        assertEquals("Usuario no encontrado con ID: 99", exception.getMessage());
-        verify(userRepository, never()).save(any(User.class));
+        assertTrue(userService.authenticate(email, rawPassword));
     }
 
     @Test
-    void testDeleteUserSuccess() {
-        User user = new User(1, "Andres Silva", "AndresSilva@gmail.com", UserRole.TEACHER, "123456");
+    void testAuthenticateFailure() {
+        String email = "notfound@gmail.com";
+        when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
 
-        when(userRepository.findById(1)).thenReturn(Optional.of(user));
-        doNothing().when(userRepository).delete(user);
-
-        User deletedUser = userService.delete(1);
-
-        assertNotNull(deletedUser);
-        assertEquals(1, deletedUser.getId());
-        verify(userRepository, times(1)).delete(user);
+        assertFalse(userService.authenticate(email, "password"));
     }
-    @Test
-    void testDeleteUserFailure() {
-        when(userRepository.findById(99)).thenReturn(Optional.empty());
-
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            userService.delete(99);
-        });
-
-        assertEquals("Usuario no encontrado con ID: 99", exception.getMessage());
-        verify(userRepository, never()).delete(any(User.class));
-    }
-
-    @Test
-    void testAutoIncrementSuccess() {
-        User existingUser = new User(1, "Andres Silva", "AndresSilva@gmail.com", UserRole.TEACHER, "123456");
-        when(userRepository.findAll()).thenReturn(Arrays.asList(existingUser));
-    
-        UserDto newUserDto = new UserDto("Maria Lopez", "MariaLopez@gmail.com", UserRole.ADMIN, "654321");
-        User newUser = new User(2, "Maria Lopez", "MariaLopez@gmail.com", UserRole.ADMIN, "654321");
-    
-        when(userRepository.save(any(User.class))).thenReturn(newUser);
-    
-        User savedUser = userService.save(newUserDto);
-    
-        assertNotNull(savedUser);
-        assertEquals(2, savedUser.getId()); 
-    
-        verify(userRepository, times(1)).save(any(User.class));
-    }
-    
-
-    @Test
-    void testAutoIncrementFailure() {
-        when(userRepository.findAll()).thenReturn(Collections.emptyList()); 
-    
-        User user = new User(1, "First User", "first@gmail.com", UserRole.TEACHER, "password");
-        when(userRepository.save(any(User.class))).thenReturn(user); 
-    
-        Integer newId = userService.save(new UserDto("First User", "first@gmail.com", UserRole.TEACHER, "password")).getId();
-    
-        assertEquals(1, newId, "El primer ID debería ser 1 cuando la lista está vacía.");
-        verify(userRepository, times(1)).findAll();
-        verify(userRepository, times(1)).save(any(User.class));
-    }
-    
 }

@@ -11,6 +11,9 @@ public class CustomPasswordEncoder {
     }
 
     public boolean matches(String rawPassword, String encodedPassword) {
+        if (rawPassword == null || encodedPassword == null) {
+            throw new IllegalArgumentException("Both raw and encoded passwords must be non-null");
+        }
         return BCrypt.checkpw(rawPassword, encodedPassword);
     }
 }

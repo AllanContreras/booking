@@ -6,7 +6,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.junit.jupiter.api.Test;
 @ContextConfiguration(classes = BookingApplication.class)
 @SpringBootTest
-@EnableAutoConfiguration
 class BookingApplicationTests {
 
 	@Test

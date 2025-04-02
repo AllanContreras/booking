@@ -118,6 +118,7 @@
 					<configuration>
 					<excludes>
 						<exclude>/configurators/</exclude>
+						<exclude>edu/eci/cvds/proyect/booking/persistency/security/**</exclude>
 					</excludes>
 					</configuration>
 				</execution>

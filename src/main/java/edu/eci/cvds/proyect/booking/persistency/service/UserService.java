@@ -22,12 +22,17 @@ public class UserService {
     @Autowired
     private CustomPasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
+
     public List<User> getAll(){
         return userRepository.findAll();
     }
+    @Autowired
+    public UserService(UserRepository userRepository, CustomPasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
+
+
 
     public User getOne(Integer id){
         if (id == null) {
