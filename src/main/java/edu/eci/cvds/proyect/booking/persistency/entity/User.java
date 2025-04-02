@@ -2,9 +2,11 @@ package edu.eci.cvds.proyect.booking.persistency.entity;
 
 import javax.persistence.Id;
 
+import org.hibernate.validator.constraints.Email;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import edu.eci.cvds.proyect.booking.users.UserRole;
+import jakarta.validation.constraints.Pattern;
 
 @Document(collection = "Users")
 public class User {
@@ -13,6 +15,8 @@ public class User {
 
     private String name;
 
+    @Email(message = "Debe ser un email válido")
+    @Pattern(regexp = "^[a-zA-Z0-9._%+-]+@escuelaing.edu.co$", message = "El email debe ser del dominio @escuelaing.edu.co")
     private String email;
 
     private UserRole role;
