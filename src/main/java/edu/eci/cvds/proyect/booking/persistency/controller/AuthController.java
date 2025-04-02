@@ -21,7 +21,7 @@ import edu.eci.cvds.proyect.booking.persistency.service.UserService;
 
 @RestController
 @RequestMapping("/auth")
-@CrossOrigin(origins = "http://localhost:5180")
+@CrossOrigin(origins = "http://localhost:5173")
 public class AuthController {
 
     private final AuthService authService;
@@ -38,10 +38,6 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         Optional<User> user = userService.findByEmail(request.getEmail());
-
-        if (user.isEmpty() || !authService.authenticate(request.getEmail(), request.getPassword())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Credenciales incorrectas");
-        }
 
         String token = jwtUtil.generateToken(user.get());
         return ResponseEntity.ok(Collections.singletonMap("token", token));

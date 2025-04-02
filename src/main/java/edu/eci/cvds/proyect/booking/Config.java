@@ -10,16 +10,11 @@ public class Config  implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("http://localhost:5180") // Permite tu frontend
+                .allowedOrigins("http://localhost:5173") // Permite tu frontend
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .allowCredentials(true);
     }
 
-    public class BCryptPasswordUtil {
-        public static String hashPassword(String password) {
-            return BCrypt.hashpw(password, BCrypt.gensalt());
-        }
-
-    }
+    
 }
